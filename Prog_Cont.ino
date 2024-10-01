@@ -10,7 +10,7 @@ extern int telaAtiva;
 
 int countToSwap = 0;
 unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastCountTimeInterval = 0;
-bool SwapActivate = false,functionExecuted = false;
+bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
 
 void Contagem_Abatida() { 
 
@@ -33,6 +33,7 @@ void Contagem_Abatida() {
 
   lastCountTimeInterval = millis();  // Atualiza o tempo da última contagem
   functionExecuted = false; // Reseta a variável de controle
+  resumedCounting = false; // Reseta a variável de controle para retomada
 
 if(SwapActivate){ // inicia a contagem ate a defeiniçao para troca de carreta
   countToSwap++;
@@ -98,7 +99,10 @@ if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !
   }
 
 
-
+ if (resumedCounting && functionExecuted) {// executa após retomada
+    
+    resumedCounting = false; // Marca a função como executada após retomada
+  }
 
 }
 
