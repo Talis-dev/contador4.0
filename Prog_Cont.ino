@@ -96,11 +96,18 @@ if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !
   setText += String(Timex[5],DEC);
   showNotification(setText.c_str());
     functionExecuted = true; // Marca a função como executada
+    resumedCounting = false; // Reseta a variável de controle para retomada
   }
 
 
  if (resumedCounting && functionExecuted) {// executa após retomada
-    
+      String setText = "RETORNO REGISTRADO ";
+  setText += String(Timex[3],DEC);
+  setText += ":";
+  setText += String(Timex[4],DEC);
+  setText += ":";
+  setText += String(Timex[5],DEC);
+  showNotification(setText.c_str());
     resumedCounting = false; // Marca a função como executada após retomada
   }
 
