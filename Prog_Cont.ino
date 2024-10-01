@@ -86,13 +86,20 @@ if(CarretaPosition <= 17){
 void setIntervalTime(){
 
 if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !functionExecuted) {
-    executeFunction(); // Chama a função desejada
+    
+  String setText = "PARADA REGISTRADA ";
+  setText += String(Timex[3],DEC);
+  setText += ":";
+  setText += String(Timex[4],DEC);
+  setText += ":";
+  setText += String(Timex[5],DEC);
+  showNotification(setText.c_str());
     functionExecuted = true; // Marca a função como executada
   }
 
 
 
-  
+
 }
 
 
