@@ -4,11 +4,11 @@ hooksToRestartCount; //ganchos
  extern String horaInicio, tempoDePausa;
 
 extern int CarretaPosition = 1,CarretaTotalAbatida = 0;
-extern uint32_t Carreta_Abatida[18]={0}, Carreta_Descarte[18]={0};
+extern uint32_t Carreta_Abatida[21]={0}, Carreta_Descarte[21]={0};
 extern bool ContadorON,InputPCF[];
 extern int telaAtiva;
 
-int countToSwap = 0;
+int countToSwap = 0,quntidade_pausa = 1;
 unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastCountTimeInterval = 0;
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
 
@@ -33,7 +33,9 @@ void Contagem_Abatida() {
 
   lastCountTimeInterval = millis();  // Atualiza o tempo da última contagem
   functionExecuted = false; // Reseta a variável de controle
-  resumedCounting = false; // Reseta a variável de controle para retomada
+ // resumedCounting = false; // Reseta a variável de controle para retomada
+checkIfItHasReturnedAfterStopping();
+
 
 if(SwapActivate){ // inicia a contagem ate a defeiniçao para troca de carreta
   countToSwap++;
@@ -70,12 +72,14 @@ SwapActivate = false;
 countToSwap = 0;
     bitWrite(saida1, 2, false);  // Atualiza o shift register
     updateShiftRegister(); 
-if(CarretaPosition <= 17){
+if(CarretaPosition <= 20){
   CarretaPosition++;
   String setText = "CARRETA N";
   setText += String(CarretaPosition,DEC);
   setText += " INICIADA!";
   showNotification(setText.c_str());
+  tempoDePausa = "Não houve Parada";
+  quntidade_pausa = 1;
 }else{
   CarretaPosition=1;}
 
@@ -88,30 +92,43 @@ void setIntervalTime(){
 
 if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !functionExecuted) {
     
-  String setText = "PARADA REGISTRADA ";
+  String setText = String(quntidade_pausa,DEC);
+  setText += "ª PARADA REGISTRADA ";
   setText += String(Timex[3],DEC);
   setText += ":";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
   showNotification(setText.c_str());
+  setText += " - ";
+  
+  if(quntidade_pausa == 1){
+    tempoDePausa = setText;
+  }else if(quntidade_pausa > 1){
+  tempoDePausa += setText;
+  }
+  
     functionExecuted = true; // Marca a função como executada
-    resumedCounting = false; // Reseta a variável de controle para retomada
+    resumedCounting = true; // Reseta a variável de controle para retomada
   }
 
 
- if (resumedCounting && functionExecuted) {// executa após retomada
+}
+ void checkIfItHasReturnedAfterStopping(){
+
+  if (resumedCounting ) {// executa após retomada
       String setText = "RETORNO REGISTRADO ";
   setText += String(Timex[3],DEC);
   setText += ":";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
+  setText += " / ";
   showNotification(setText.c_str());
-    resumedCounting = false; // Marca a função como executada após retomada
+  tempoDePausa += setText;
+  quntidade_pausa ++;
+  resumedCounting = false; // Marca a função como executada após retomada
   }
-
-}
-
+ }
 
 
