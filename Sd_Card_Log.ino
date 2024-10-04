@@ -3,7 +3,7 @@ extern bool sdCardFault;
 
 
 void Log_Carreta(){
-showNotification("SALVANDO DADOS DA CARRETA!");
+showNotification("SALVANDO DADOS DA CARRETA!",3);
 DataToFile +=".csv";
 
 String carreta_position="Carreta ";

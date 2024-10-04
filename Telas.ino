@@ -210,7 +210,7 @@ if(!mensageActive){
  }
 }
 
-void showNotification(const char* message) {
+void showNotification(const char* message, int numberColor) {
   currentTimeMessage = millis();
    mensageActive = true;
     sendCommand("vis nfy,1");
@@ -219,8 +219,21 @@ void showNotification(const char* message) {
     nfy.setText(message);
     dbSerial.println("mensagem iniciada");
     //sendCommand("vis nfy,0");
-}
 
+    // Altera a cor do texto de acordo com o valor de numeroDe1A3
+    switch (numberColor) {
+        case 1:
+            sendCommand("nfy.pco=57024");  // Amarelo
+            break;
+        case 2:
+            sendCommand("nfy.pco=63488");  // Vermelho
+            break;
+        case 3:
+            sendCommand("nfy.pco=1024");   // Verde
+            break;
+    
+}
+}
 
 // Função para enviar comandos ao Nextion
 void sendCommand(String cmd) {

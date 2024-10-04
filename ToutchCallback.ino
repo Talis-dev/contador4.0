@@ -53,7 +53,7 @@ void b1call(void *ptr) { // botao pge 4 menu
 void b2call(void *ptr) { // botao intervalo
  dbSerial.println("Botao intervalo prescionado");
  IntervaloButton = true;
- showNotification("Aguardando PARADA para intervalo!");
+ showNotification("Aguardando PARADA para intervalo!",3);
   }
 
 void bt0call(void *ptr) { // bt liga desliga norea descarte

@@ -62,7 +62,7 @@ SwapActivate = true;
     bitWrite(saida1, 2, true);  // Atualiza o shift register
     updateShiftRegister(); 
     dbSerial.println("solicitado a troca de carreta, aguardando contagem ");
-    showNotification("INICIOU A TROCA DE CARRETA!");
+    showNotification("INICIOU A TROCA DE CARRETA!",3);
   }
 }
 
@@ -77,12 +77,12 @@ if(CarretaPosition <= 20){
   String setText = "CARRETA N";
   setText += String(CarretaPosition,DEC);
   setText += " INICIADA!";
-  showNotification(setText.c_str());
+  showNotification(setText.c_str(),3);
   tempoDePausa = "Não houve Parada";
   quntidade_pausa = 1;
 }else{
   CarretaPosition=1;
-  showNotification("LImite de carretas atigido!, vontando p/ 1");
+  showNotification("LImite de carretas atigido!, vontando p/ 1",1);
   tempoDePausa = "Não houve Parada";
   quntidade_pausa = 1;  
   }
@@ -109,7 +109,7 @@ String setText = "";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
-  showNotification(setText.c_str());
+  showNotification(setText.c_str(),3);
   setText += " - ";
 
   if(quntidade_pausa == 1){
@@ -139,7 +139,7 @@ String setText = "";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
-  showNotification(setText.c_str());
+  showNotification(setText.c_str(),3);
   setText += " / ";
   tempoDePausa += setText;
   quntidade_pausa ++;
