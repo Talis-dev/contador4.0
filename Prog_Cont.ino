@@ -101,7 +101,7 @@ String setText = "";
     setText = "PARADA P/ INTERVALO ";  
    }else{
     setText = String(quntidade_pausa,DEC);
-    setText += "ª PARADA REGISTRADA ";    
+    setText += "a PARADA REGISTRADA ";    
     }  
 
   setText += String(Timex[3],DEC);

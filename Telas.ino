@@ -213,14 +213,8 @@ if(!mensageActive){
 void showNotification(const char* message, int numberColor) {
   currentTimeMessage = millis();
    mensageActive = true;
-    sendCommand("vis nfy,1");
     delay(20);
-    mensageActive = true;
-    nfy.setText(message);
-    dbSerial.println("mensagem iniciada");
-    //sendCommand("vis nfy,0");
-
-    // Altera a cor do texto de acordo com o valor de numeroDe1A3
+       // Altera a cor do texto de acordo com o valor de numeroDe1A3
     switch (numberColor) {
         case 1:
             sendCommand("nfy.pco=57024");  // Amarelo
@@ -231,7 +225,14 @@ void showNotification(const char* message, int numberColor) {
         case 3:
             sendCommand("nfy.pco=1024");   // Verde
             break;
-    
+            
+    sendCommand("vis nfy,1");
+    delay(20);
+    mensageActive = true;
+    nfy.setText(message);
+    dbSerial.println("mensagem iniciada");
+    //sendCommand("vis nfy,0");
+ 
 }
 }
 
