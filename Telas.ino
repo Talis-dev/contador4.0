@@ -137,11 +137,13 @@ if(positionAnterior != CarretaPosition){
 if(abatidaAnterior != CarretaTotalAbatida){
 C1.setValue(Carreta_Abatida[CarretaPosition]);
 C4.setValue(CarretaTotalAbatida);
+abatidaAnterior = CarretaTotalAbatida;
 }
 
 if(descartAnterior != CarretaTotalDescarte){
 C2.setValue(Carreta_Descarte[CarretaPosition]);
 C3.setValue(CarretaTotalDescarte);
+descartAnterior = CarretaTotalDescarte;
 }
 
 

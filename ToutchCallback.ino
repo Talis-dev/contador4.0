@@ -1,6 +1,6 @@
 extern uint32_t bt0var,bt1var;
 extern int telaAtiva;
-extern bool ContadorON=false;
+extern bool ContadorON=false, IntervaloButton=false;
 
 void nexattachPops(){
 b0.attachPop(b0call, &b0); //chama tela carretas
@@ -52,8 +52,8 @@ void b1call(void *ptr) { // botao pge 4 menu
 
 void b2call(void *ptr) { // botao intervalo
  dbSerial.println("Botao intervalo prescionado");
-
-showNotification("SALVANDO DADOS DA CARRETA!");
+ IntervaloButton = true;
+ showNotification("Aguardando PARADA para intervalo!");
   }
 
 void bt0call(void *ptr) { // bt liga desliga norea descarte

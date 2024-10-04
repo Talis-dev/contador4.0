@@ -5,11 +5,11 @@ hooksToRestartCount; //ganchos
 
 extern int CarretaPosition = 1,CarretaTotalAbatida = 0;
 extern uint32_t Carreta_Abatida[21]={0}, Carreta_Descarte[21]={0};
-extern bool ContadorON,InputPCF[];
+extern bool ContadorON,InputPCF[],IntervaloButton;
 extern int telaAtiva;
 
 int countToSwap = 0,quntidade_pausa = 1;
-unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastCountTimeInterval = 0;
+unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastCountTimeStopped = 0;
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
 
 void Contagem_Abatida() { 
@@ -19,6 +19,7 @@ void Contagem_Abatida() {
 
 
  if(InputPCF[7] && InputPCF[6] && millis() - TimeBauncing > timeBauncingTrolleyPendura ){
+  TimeBauncing = millis();
 
  if(Carreta_Abatida[CarretaPosition] == 0){ // registra hora do inicio da contagem
   horaInicio = String(Timex[3],DEC);
@@ -31,7 +32,7 @@ void Contagem_Abatida() {
   Carreta_Abatida[CarretaPosition]++;
   CarretaTotalAbatida ++;
 
-  lastCountTimeInterval = millis();  // Atualiza o tempo da última contagem
+  lastCountTimeStopped = millis();  // Atualiza o tempo da última contagem
   functionExecuted = false; // Reseta a variável de controle
  // resumedCounting = false; // Reseta a variável de controle para retomada
 checkIfItHasReturnedAfterStopping();
@@ -40,12 +41,11 @@ checkIfItHasReturnedAfterStopping();
 if(SwapActivate){ // inicia a contagem ate a defeiniçao para troca de carreta
   countToSwap++;
 }
-  TimeBauncing = millis();
 
  } 
 
 SwapTrailer();
-setIntervalTime();
+setStoppedTime();
   }
 
 
@@ -81,19 +81,29 @@ if(CarretaPosition <= 20){
   tempoDePausa = "Não houve Parada";
   quntidade_pausa = 1;
 }else{
-  CarretaPosition=1;}
-
+  CarretaPosition=1;
+  showNotification("LImite de carretas atigido!, vontando p/ 1");
+  tempoDePausa = "Não houve Parada";
+  quntidade_pausa = 1;  
+  }
+  
 
 }
 
 }
 
-void setIntervalTime(){
+void setStoppedTime(){
 
-if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !functionExecuted) {
-    
-  String setText = String(quntidade_pausa,DEC);
-  setText += "ª PARADA REGISTRADA ";
+if (CarretaTotalAbatida > 0 && millis() - lastCountTimeStopped > breakTime && !functionExecuted) {
+String setText = "";
+  if(IntervaloButton){
+
+    setText = "PARADA P/ INTERVALO ";  
+   }else{
+    setText = String(quntidade_pausa,DEC);
+    setText += "ª PARADA REGISTRADA ";    
+    }  
+
   setText += String(Timex[3],DEC);
   setText += ":";
   setText += String(Timex[4],DEC);
@@ -101,7 +111,7 @@ if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !
   setText += String(Timex[5],DEC);
   showNotification(setText.c_str());
   setText += " - ";
-  
+
   if(quntidade_pausa == 1){
     tempoDePausa = setText;
   }else if(quntidade_pausa > 1){
@@ -117,17 +127,24 @@ if (CarretaTotalAbatida > 0 && millis() - lastCountTimeInterval > breakTime && !
  void checkIfItHasReturnedAfterStopping(){
 
   if (resumedCounting ) {// executa após retomada
-      String setText = "RETORNO REGISTRADO ";
+   String setText = "";
+    if(IntervaloButton){
+    setText = "RETORNO DO INTERVALO " ;
+    }else{
+      setText = "RETORNO REGISTRADO ";
+    } 
+ 
   setText += String(Timex[3],DEC);
   setText += ":";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
-  setText += " / ";
   showNotification(setText.c_str());
+  setText += " / ";
   tempoDePausa += setText;
   quntidade_pausa ++;
   resumedCounting = false; // Marca a função como executada após retomada
+  IntervaloButton = false; // reseta button intervalo depois de retornar
   }
  }
 
