@@ -3,7 +3,7 @@ extern bool sdCardFault;
 
 
 void Log_Carreta(){
-showNotification("SALVANDO DADOS DA CARRETA!",3);
+showNotification("SALVANDO DADOS DA CARRETA!",2);
 DataToFile +=".csv";
 
 String carreta_position="Carreta ";
@@ -38,6 +38,7 @@ if (FileCsv) {
   } else {
    // se o arquivo não abriu, imprime um erro:
     dbSerial.println("ERRO NA GRAVAÇAO verifique o sdcard!");
+    showNotification("ERRO NA GRAVAÇAO verifique o sdcard!",1);
        LerArquivoCSV(DataToFile);
        sdCardFault = true;
     } 
@@ -65,7 +66,11 @@ void LerArquivoCSV(String nomeArquivo) {
         file.close();
     } else {
         // Se o arquivo não abriu, imprime um erro
-        dbSerial.println("ERRO AO ABRIR O ARQUIVO: " + nomeArquivo);
+        
+        String setText = "ERRO AO ABRIR O ARQUIVO: " + nomeArquivo;
+        dbSerial.println(setText);
+        showNotification(setText.c_str(),1);
+        
         sdCardFault = true;
     }
 }

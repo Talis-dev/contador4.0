@@ -9,8 +9,11 @@ extern bool ContadorON,InputPCF[],IntervaloButton;
 extern int telaAtiva;
 
 int countToSwap = 0,quntidade_pausa = 1;
-unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastCountTimeStopped = 0;
+unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0, lastCountTimeStopped = 0;
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
+unsigned int pulseCount = 0;
+extern int pulsesPerMinute = 0,pulsesPerHour = 0;
+
 
 void Contagem_Abatida() { 
 
@@ -29,28 +32,48 @@ void Contagem_Abatida() {
   horaInicio += String(Timex[5],DEC);
    }
 
+
+
+    dbSerial.print("Pulsos por minuto: ");
+    dbSerial.println(pulsesPerMinute);
+    dbSerial.print("Pulsos por hora: ");
+    dbSerial.println(pulsesPerHour);
+
   Carreta_Abatida[CarretaPosition]++;
   CarretaTotalAbatida ++;
-
+   
   lastCountTimeStopped = millis();  // Atualiza o tempo da última contagem
   functionExecuted = false; // Reseta a variável de controle
  // resumedCounting = false; // Reseta a variável de controle para retomada
 checkIfItHasReturnedAfterStopping();
-
+  }
 
 if(SwapActivate){ // inicia a contagem ate a defeiniçao para troca de carreta
   countToSwap++;
 }
 
- } 
-
+medirVelocidade();
 SwapTrailer();
 setStoppedTime();
+ } 
+
   }
 
 
-}
+void medirVelocidade() {
+    unsigned long currentTime = millis();
 
+    if (InputPCF[7] && (currentTime - lastDebounceTime) > 150) {
+        lastDebounceTime = currentTime;
+        pulseCount++;
+        unsigned long pulseDuration = currentTime - lastPulseTime;
+        lastPulseTime = currentTime;
+
+        // Calcula a velocidade em pulsos por minuto
+        pulsesPerMinute = 60000.0 / pulseDuration;
+        pulsesPerHour = pulsesPerMinute * 60;
+    }
+}
 
 void SwapTrailer(){ // troca de carreta
 
@@ -73,7 +96,14 @@ countToSwap = 0;
     bitWrite(saida1, 2, false);  // Atualiza o shift register
     updateShiftRegister(); 
 if(CarretaPosition <= 20){
-  CarretaPosition++;
+  //CarretaPosition++;
+    for (int i = 1; i <= 20; i++) {
+        if (Carreta_Abatida[i] == 0) {
+            CarretaPosition = i;
+            break;
+        }
+    }
+    
   String setText = "CARRETA N";
   setText += String(CarretaPosition,DEC);
   setText += " INICIADA!";
@@ -96,12 +126,15 @@ void setStoppedTime(){
 
 if (CarretaTotalAbatida > 0 && millis() - lastCountTimeStopped > breakTime && !functionExecuted) {
 String setText = "";
+int numcolor = 3;
   if(IntervaloButton){
 
     setText = "PARADA P/ INTERVALO ";  
+    numcolor = 2;
    }else{
-    setText = String(quntidade_pausa,DEC);
-    setText += "a PARADA REGISTRADA ";    
+    setText = "PARADA " + String(quntidade_pausa,DEC) + " REGISTRADA ";
+    numcolor = 1;
+   // setText += ";    
     }  
 
   setText += String(Timex[3],DEC);
@@ -109,7 +142,7 @@ String setText = "";
   setText += String(Timex[4],DEC);
   setText += ":";
   setText += String(Timex[5],DEC);
-  showNotification(setText.c_str(),3);
+  showNotification(setText.c_str(),numcolor);
   setText += " - ";
 
   if(quntidade_pausa == 1){

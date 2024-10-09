@@ -52,10 +52,10 @@ extern int BAR = 0;
 #include <Wire.h>
 #include "RTClib.h"
 RTC_DS1307 rtc;
-extern char DiasDaSemana[7][20] = {"Domingo", "Segunda-Feira", "Terca-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado"}; // array 7 caracteres de valor 12 caracteres
-extern char semanaN[1] = {0}; // numero da semana atual setada pelo rtc ds1307
+//extern char DiasDaSemana[7][20] = {"Domingo", "Segunda-Feira", "Terca-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado"}; // array 7 caracteres de valor 12 caracteres
+//extern char semanaN[1] = {0}; // numero da semana atual setada pelo rtc ds1307
 
-extern int Numsemana = 0;
+
 extern int Timex[6] = {0};
 int Q0 = 2; //saida pino led int monitora dbserial ihm
 
@@ -75,7 +75,7 @@ extern int timeOffDescart = 0;
 //----------------------------------------------------ENDEREÇO NEXTION IHM tela 0 home ---------------------------------------------------//
 NexText nfy = NexText(0, 1, "nfy"); // notificaçao
 
-NexText semana = NexText(0, 7, "semana"); // dia da semana
+NexText vel = NexText(0, 7, "vel"); // velocidade norea
 NexText hor = NexText(0, 2, "hor"); // hora
 NexText bat = NexText(0, 13, "bat"); // bateria
 NexText t12 = NexText(0, 35, "t12"); // tempo off descarte
@@ -87,9 +87,6 @@ NexNumber C3 = NexNumber(0, 18, "C3");
 NexNumber C4 = NexNumber(0, 20, "C4");
 
 extern uint32_t varC0 = 0,varC1 = 0,varC2 = 0,varC3 = 0,varC4 = 0;
-
-NexVariable Num7 = NexVariable(0, 8, "Num7"); // variavel dias da semana
-uint32_t num_n7; // variavel semana
 
 NexButton b0 = NexButton(0, 3, "b0"); // bt chama pagina carretas
 NexButton b1 = NexButton(0, 26, "b1"); // bt chama pagina menu
@@ -359,12 +356,6 @@ Timex[3] = now.hour(), DEC;
 Timex[4] = now.minute(), DEC;
 Timex[5] = now.second(), DEC;
 
-if(Timex[3] != horaAnterior){
-semanaN[1] = now.dayOfTheWeek();
-dbSerial.println(DiasDaSemana[semanaN[1]]);
-Numsemana = semanaN[1],DEC;
-horaAnterior = Timex[3];
-}
 bateria();
 }//end calculos
 

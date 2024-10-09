@@ -190,7 +190,25 @@ nc3.setValue(zera);
 }
 
 void z6call(void *ptr) {//bt alterar carreta para abater agora
+uint32_t carretaSelecionada = 0,
+valorUpdateCarreta = 0,
+valorUpdateDescarte = 0,
+zera = 0;
+nc1.getValue(&carretaSelecionada);
+valorUpdateCarreta = Carreta_Abatida[CarretaPosition]; // pega o valor atual
+valorUpdateDescarte = Carreta_Descarte[CarretaPosition];
 
+Carreta_Abatida[CarretaPosition] = 0; // zera o valor 
+Carreta_Descarte[CarretaPosition] = 0;
+delay(50);
+
+Carreta_Abatida[carretaSelecionada] = valorUpdateCarreta; //seta o valor atual para a posiçao selecionada
+Carreta_Descarte[carretaSelecionada] = valorUpdateDescarte;
+CarretaPosition = carretaSelecionada; // seta a nova posiçao atual
+delay(50);
+nc1.setValue(zera);
+nc2.setValue(zera);
+nc3.setValue(zera);
 }
 
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//

@@ -2,7 +2,7 @@ extern uint32_t atualizaVar,timeStopDescart;
 extern uint32_t imagem1,imagem2,imagem3,imagem4,imagem5,imagem6;
 int Ant1=0,Ant2=0,Ant3=0,Ant4=0,Ant5=0;
 extern uint32_t botaoHRvar,diavar,mesvar,anovar,horavar,minutvar,segunvar;
-extern int Numsemana, BitPcf,timeOffDescart;
+extern int BitPcf,timeOffDescart;
 int sethra[5] = {0};
 extern int  soma = 0, telaAtiva = 0;
 extern int BAR;
@@ -14,6 +14,9 @@ int Tempo_anterior = 0, soma2 = 0;
 int long dlyihm = 0, tempo_espera = 0,tempo_espera2 = 0, dlay = 0, dlay4 = 0;
 extern float tensaoMedia;
 unsigned long currentTimeMessage = 0, currentTimeHorToTxt = 0;
+
+const char* meses[] = {"","Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"};
+
 
 //----------------void atualiza imagem --------------//
 
@@ -39,18 +42,17 @@ dlay4 = millis();
 
 
 time_buf[30] = {0};
-String HR;
-HR += "DATA ";                 /// formatação da hora e data
+String HR; /// formatação da hora e data             
 HR += String(Timex[0],DEC);
 DataToFile="/";
 DataToFile += String(Timex[0],DEC);
-HR += "/";
-HR += String(Timex[1],DEC);
+HR += " de ";
+HR += meses[Timex[1]];
 DataToFile += String(Timex[1],DEC);
-HR += "/";
-HR += String(Timex[2],DEC);
+HR += " de ";
+HR += String(Timex[2] % 100, DEC); // recebe somente os 2 ultimo numero do ano
 DataToFile += String(Timex[2],DEC);
-HR += " HORA ";
+HR += " - ";
 HR += String(Timex[3],DEC);
 HR += ":";
 HR += String(Timex[4],DEC);
@@ -109,7 +111,7 @@ tempo_espera = millis();
 /*
 if(!mensageActive){
 hor.setText(time_buf); // envia txt formato char data e hora  
- Num7.setValue(Numsemana+1);
+ 
  }*/
 
 
@@ -204,8 +206,10 @@ dbSerial.println("mensagem finalizada");
 
 if(!mensageActive){
  hor.setText(time_buf); // envia txt formato char data e hora  
- //Num7.setValue(Numsemana+1);
- semana.setText(DiasDaSemana[semanaN[1]]);
+char bufferVel[50];
+// Formata a string para enviar ao Nextion
+ snprintf(bufferVel, sizeof(bufferVel), "F/Mn %d F/Hr %d", pulsesPerMinute, pulsesPerHour);
+ vel.setText(bufferVel);
 }
  }
 }
@@ -213,23 +217,24 @@ if(!mensageActive){
 void showNotification(const char* message, int numberColor) {
   currentTimeMessage = millis();
    mensageActive = true;
-    delay(20);
+    sendCommand("vis nfy,1");
+ delay(20);
+     nfy.setText(message);
+  delay(20);    
        // Altera a cor do texto de acordo com o valor de numeroDe1A3
     switch (numberColor) {
         case 1:
-            sendCommand("nfy.pco=57024");  // Amarelo
+            sendCommand("nfy.bco=63488");  // Vermelho
             break;
         case 2:
-            sendCommand("nfy.pco=63488");  // Vermelho
+            sendCommand("nfy.bco=16");  // azul
             break;
         case 3:
-            sendCommand("nfy.pco=1024");   // Verde
+            sendCommand("nfy.bco=1024");   // Verde
             break;
-            
-    sendCommand("vis nfy,1");
-    delay(20);
+
+   
     mensageActive = true;
-    nfy.setText(message);
     dbSerial.println("mensagem iniciada");
     //sendCommand("vis nfy,0");
  
