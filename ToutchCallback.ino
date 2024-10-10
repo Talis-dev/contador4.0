@@ -10,6 +10,7 @@ mt.attachPop(mtcall, &mt);//bt chama tela mortalidade
 cf.attachPop(cfcall, &cf);//bt chama tela config
 cfs.attachPop(cfscall, &cfs);//bt salvar configuraçoes
 
+z0.attachPop(z0call, &z0);//bt  salvar e finalizar abate
 z1.attachPop(z1call, &z1);//bt zera total page menu
 z2.attachPop(z2call, &z2);//bt zera descarte page menu
 z3.attachPop(z3call, &z3);//bt zera tudo page menu
@@ -133,6 +134,12 @@ setConfigDisplay();
 void vt3call(void *ptr) { // botao voltar na pge 4
  dbSerial.println("Tela ativa 0!");
  telaAtiva = 0; }
+
+void z0call(void *ptr) { //bt finaliza abate
+tempoDePausa = "Não houve Parada";
+Log_Carreta();
+notificationSD = true; 
+}
 
 void z1call(void *ptr) { //bt zera total
 CarretaTotalAbatida = 0;

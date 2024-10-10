@@ -5,12 +5,12 @@ hooksToRestartCount; //ganchos
 
 extern int CarretaPosition = 1,CarretaTotalAbatida = 0;
 extern uint32_t Carreta_Abatida[21]={0}, Carreta_Descarte[21]={0};
-extern bool ContadorON,InputPCF[],IntervaloButton;
+extern bool ContadorON,InputPCF[],IntervaloButton,sdCardWriteSuccessful, notificationSD = false;
 extern int telaAtiva;
 
 int countToSwap = 0,quntidade_pausa = 1;
-unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0, lastCountTimeStopped = 0,currentTimeMessage = 0;
-bool SwapActivate = false,functionExecuted = false,resumedCounting = false, notificationSD = false;
+unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0, lastCountTimeStopped = 0,currentTimeMessageSD = 0;
+bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
 unsigned int pulseCount = 0;
 extern int pulsesPerMinute = 0,pulsesPerHour = 0;
 
@@ -50,6 +50,7 @@ medirVelocidade();
 
 SwapTrailer();
 setStoppedTime();
+notificationSdCardAfterChange();
  } // contador habilitado
 
   }
@@ -92,7 +93,7 @@ countToSwap = 0;
     updateShiftRegister(); 
 
     notificationSD = true;         //chama a funçao para notificar a gravaçao no sd card apos trocar carreta
-    currentTimeMessage = millis();
+    currentTimeMessageSD = millis();
 
 if(CarretaPosition <= 20){
   //CarretaPosition++;
@@ -180,13 +181,15 @@ pulsesPerHour = 0; // resenta o medidor de velocidade qando parar
   IntervaloButton = false; // reseta button intervalo depois de retornar
   }
  }
-
-if(notificationSD && millis() - currentTimeMessage >= notificationDuration + 500){ // tempo de duraçao da notificaçao sd card apos trocar de carrta
+void notificationSdCardAfterChange(){
+if(notificationSD && millis() - currentTimeMessageSD >= notificationDuration + 500){ // tempo de duraçao da notificaçao sd card apos trocar de carrta
 
 if(sdCardWriteSuccessful){
-showNotification("SALVANDO DADOS DA CARRETA!",2);
+showNotification("DADOS DA CARRETA SALVO COM SUCESSO!",2);
+sdCardWriteSuccessful = false;
 }else{
-showNotification("ERRO NA GRAVAÇAO verifique o sdcard!",1);
+showNotification("ERRO NA GRAVAÇAO verifique o SDcard!",1);
 }
 notificationSD = false;
 } 
+}
