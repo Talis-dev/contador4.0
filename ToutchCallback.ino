@@ -65,6 +65,10 @@ void bt1call(void *ptr) { // bt abilita contador
 dbSerial.println("Botao bt1 prescionado!");
 bt1.getValue(&bt1var);
 ContadorON = bt1var;
+if(!bt1var){
+pulsesPerMinute = 0;
+pulsesPerHour = 0;
+}
 }
 
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//

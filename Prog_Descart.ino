@@ -53,7 +53,7 @@ noreaDescartPower = false;
 
 void CountDisposalPerTrailer(){ // executa quando norea descarte estiver ativa
 
-if(InputPCF[5]){  //sensor 5 frnago // sensor 4 trolley
+if(InputPCF[5] && InputPCF[4] ){  //sensor 5 frnago // sensor 4 trolley
   if(millis() - currentTimeSensor > timeDelaySensorDescart){
 currentTimeSensor = millis();
 

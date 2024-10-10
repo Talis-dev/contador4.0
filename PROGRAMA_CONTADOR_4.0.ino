@@ -196,18 +196,19 @@ int pageMenu = 4;
 
 
 NexButton vt3 = NexButton(pageMenu, 1, "vt3");
-NexButton cf = NexButton(pageMenu, 15, "cf");
+NexButton cf = NexButton(pageMenu, 14, "cf");
 
-NexButton z1 = NexButton(pageMenu, 3, "z1");
-NexButton z2 = NexButton(pageMenu, 4, "z2");
-NexButton z3 = NexButton(pageMenu, 5, "z3");
-NexButton z4 = NexButton(pageMenu, 6, "z4");
-NexButton z5 = NexButton(pageMenu, 8, "z5");
-NexButton z6 = NexButton(pageMenu, 16, "z6");
+NexButton z0 = NexButton(pageMenu, 16, "z0");
+NexButton z1 = NexButton(pageMenu, 2, "z1");
+NexButton z2 = NexButton(pageMenu, 3, "z2");
+NexButton z3 = NexButton(pageMenu, 4, "z3");
+NexButton z4 = NexButton(pageMenu, 5, "z4");
+NexButton z5 = NexButton(pageMenu, 7, "z5");
+NexButton z6 = NexButton(pageMenu, 15, "z6");
 
-NexNumber nc1 = NexNumber(pageMenu, 7, "nc1");
-NexNumber nc2 = NexNumber(pageMenu, 9, "nc2");
-NexNumber nc3 = NexNumber(pageMenu, 10, "nc3");
+NexNumber nc1 = NexNumber(pageMenu, 6, "nc1");
+NexNumber nc2 = NexNumber(pageMenu, 8, "nc2");
+NexNumber nc3 = NexNumber(pageMenu, 9, "nc3");
 //-----------------------------------------------------------------------------------------------------------------------------------//
 
 //----------------------------------------------------ENDEREÇO NEXTION IHM page 6 Config --------------------------------------------------//
@@ -251,7 +252,7 @@ NexTouch *nex_listen_list[] =
 &b0,&b1,&b2, //page 0 home
 &bt0,&bt1,&hor,//page 0 home
 &vt2, &botaoHR,// page 5 hora
-&vt3,&cf,&z1,&z2,&z3,&z4,&z5,&z6, //page 4 menu
+&vt3,&cf,&z0,&z1,&z2,&z3,&z4,&z5,&z6, //page 4 menu
 &vt4, //page 3 mortalidade
 &vt5,&cfs, //page 6 config
     NULL

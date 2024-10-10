@@ -1,9 +1,10 @@
 extern String DateAndHora_Str = "", DataToFile = "",horaInicio = "",tempoDePausa = "Não houve Parada";
 extern bool sdCardFault;
+extern bool sdCardWriteSuccessful = false;
 
 
 void Log_Carreta(){
-showNotification("SALVANDO DADOS DA CARRETA!",2);
+//showNotification("SALVANDO DADOS DA CARRETA!",2);
 DataToFile +=".csv";
 
 String carreta_position="Carreta ";
@@ -35,12 +36,14 @@ if (FileCsv) {
     delay(100);
      //dbSerial.println("Gravação bem-sucedida no arquivo: " + DataToFile);
     LerArquivoCSV(DataToFile);
+    sdCardWriteSuccessful = true;
   } else {
    // se o arquivo não abriu, imprime um erro:
     dbSerial.println("ERRO NA GRAVAÇAO verifique o sdcard!");
     showNotification("ERRO NA GRAVAÇAO verifique o sdcard!",1);
        LerArquivoCSV(DataToFile);
        sdCardFault = true;
+       sdCardWriteSuccessful = false;
     } 
 
 
@@ -70,7 +73,6 @@ void LerArquivoCSV(String nomeArquivo) {
         String setText = "ERRO AO ABRIR O ARQUIVO: " + nomeArquivo;
         dbSerial.println(setText);
         showNotification(setText.c_str(),1);
-        
         sdCardFault = true;
     }
 }

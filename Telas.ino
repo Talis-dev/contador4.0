@@ -200,8 +200,6 @@ if(mensageActive && millis() - currentTimeMessage >= notificationDuration){ // t
 //bt1.setText("CONTADOR  ON");
 mensageActive = false;
 sendCommand("vis nfy,0");
-dbSerial.println("mensagem finalizada");
-
 } 
 
 if(!mensageActive){

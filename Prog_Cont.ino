@@ -9,8 +9,8 @@ extern bool ContadorON,InputPCF[],IntervaloButton;
 extern int telaAtiva;
 
 int countToSwap = 0,quntidade_pausa = 1;
-unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0, lastCountTimeStopped = 0;
-bool SwapActivate = false,functionExecuted = false,resumedCounting = false;
+unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0, lastCountTimeStopped = 0,currentTimeMessage = 0;
+bool SwapActivate = false,functionExecuted = false,resumedCounting = false, notificationSD = false;
 unsigned int pulseCount = 0;
 extern int pulsesPerMinute = 0,pulsesPerHour = 0;
 
@@ -21,7 +21,7 @@ void Contagem_Abatida() {
   if(ContadorON){
 
 
- if(InputPCF[7] && InputPCF[6] && millis() - TimeBauncing > timeBauncingTrolleyPendura ){
+ if(InputPCF[7] && InputPCF[6] && millis() - TimeBauncing > timeBauncingTrolleyPendura ){ // [7] gancho aves  [6] sensor gancho
   TimeBauncing = millis();
 
  if(Carreta_Abatida[CarretaPosition] == 0){ // registra hora do inicio da contagem
@@ -32,13 +32,6 @@ void Contagem_Abatida() {
   horaInicio += String(Timex[5],DEC);
    }
 
-
-
-    dbSerial.print("Pulsos por minuto: ");
-    dbSerial.println(pulsesPerMinute);
-    dbSerial.print("Pulsos por hora: ");
-    dbSerial.println(pulsesPerHour);
-
   Carreta_Abatida[CarretaPosition]++;
   CarretaTotalAbatida ++;
    
@@ -46,16 +39,18 @@ void Contagem_Abatida() {
   functionExecuted = false; // Reseta a variável de controle
  // resumedCounting = false; // Reseta a variável de controle para retomada
 checkIfItHasReturnedAfterStopping();
-  }
 
 if(SwapActivate){ // inicia a contagem ate a defeiniçao para troca de carreta
   countToSwap++;
 }
 
+
 medirVelocidade();
+  } // enquanto sensor for atuado
+
 SwapTrailer();
 setStoppedTime();
- } 
+ } // contador habilitado
 
   }
 
@@ -63,7 +58,7 @@ setStoppedTime();
 void medirVelocidade() {
     unsigned long currentTime = millis();
 
-    if (InputPCF[7] && (currentTime - lastDebounceTime) > 150) {
+    if (InputPCF[6] && (currentTime - lastDebounceTime) > 150) {
         lastDebounceTime = currentTime;
         pulseCount++;
         unsigned long pulseDuration = currentTime - lastPulseTime;
@@ -95,6 +90,10 @@ SwapActivate = false;
 countToSwap = 0;
     bitWrite(saida1, 2, false);  // Atualiza o shift register
     updateShiftRegister(); 
+
+    notificationSD = true;         //chama a funçao para notificar a gravaçao no sd card apos trocar carreta
+    currentTimeMessage = millis();
+
 if(CarretaPosition <= 20){
   //CarretaPosition++;
     for (int i = 1; i <= 20; i++) {
@@ -116,7 +115,6 @@ if(CarretaPosition <= 20){
   tempoDePausa = "Não houve Parada";
   quntidade_pausa = 1;  
   }
-  
 
 }
 
@@ -127,6 +125,8 @@ void setStoppedTime(){
 if (CarretaTotalAbatida > 0 && millis() - lastCountTimeStopped > breakTime && !functionExecuted) {
 String setText = "";
 int numcolor = 3;
+pulsesPerMinute = 0;
+pulsesPerHour = 0; // resenta o medidor de velocidade qando parar
   if(IntervaloButton){
 
     setText = "PARADA P/ INTERVALO ";  
@@ -181,4 +181,12 @@ int numcolor = 3;
   }
  }
 
+if(notificationSD && millis() - currentTimeMessage >= notificationDuration + 500){ // tempo de duraçao da notificaçao sd card apos trocar de carrta
 
+if(sdCardWriteSuccessful){
+showNotification("SALVANDO DADOS DA CARRETA!",2);
+}else{
+showNotification("ERRO NA GRAVAÇAO verifique o sdcard!",1);
+}
+notificationSD = false;
+} 
