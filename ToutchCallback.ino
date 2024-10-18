@@ -53,8 +53,14 @@ void b1call(void *ptr) { // botao pge 4 menu
 
 void b2call(void *ptr) { // botao intervalo
  dbSerial.println("Botao intervalo prescionado");
- IntervaloButton = true;
- showNotification("Aguardando PARADA para intervalo!",3);
+ if(noreaRun ){
+   IntervaloButton = true;
+    showNotification("Aguardando PARADA para intervalo!",2);
+ sendCommand("b2.bco=1024");
+ }else{
+  showNotification("Error, intervalo N/ registrado, Norea PARADA!",1);
+ }
+ 
   }
 
 void bt0call(void *ptr) { // bt liga desliga norea descarte
@@ -139,6 +145,7 @@ void z0call(void *ptr) { //bt finaliza abate
 tempoDePausa = "Não houve Parada";
 Log_Carreta();
 notificationSD = true; 
+telaAtiva = 0;
 }
 
 void z1call(void *ptr) { //bt zera total

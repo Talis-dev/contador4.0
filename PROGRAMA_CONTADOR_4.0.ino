@@ -24,6 +24,10 @@
 #include <24LC256.h>
 #include <SPI.h>
 #include  "Nextion.h"   //biblioteca Nextion
+//#include <WiFi.h>
+#include <ArduinoJson.h>
+#include <PubSubClient.h>
+const char* mqtt_server ="192.168.0.26";
 
 extern PCF8574 PCF(0x3D); // enderesso modulos saidas i2c
 
@@ -37,17 +41,17 @@ byte saida1 = 0x00;
 
 
 #include <SD.h>
-#define CS_PIN  5 // pin do sd card
-/* CS    = 5;
-  MOSI  = 23;
-  MISO  = 19;
-  SCK   = 18; */
+
+// Definir pinos VSPI para SD Card
+#define VSPI_SCLK 18
+#define VSPI_MISO 19
+#define VSPI_MOSI 23
+#define VSPI_CS_SD 5  // Chip Select do SD Card
 
 
+// iniciou se aa mundança aki
 int PinCorrente = 0;
-extern int BAR = 0;
-#define WP 33
-#define ANALOG_PIN_0 15
+
 #define ANALOG_PIN_1 4
 #include <Wire.h>
 #include "RTClib.h"
@@ -57,7 +61,7 @@ RTC_DS1307 rtc;
 
 
 extern int Timex[6] = {0};
-int Q0 = 2; //saida pino led int monitora dbserial ihm
+
 
 float tensaoEntrada = 0.0; //VARIÁVEL PARA ARMAZENAR O VALOR DE TENSÃO DE ENTRADA DO SENSOR
 float tensaoMedida = 0.0; //VARIÁVEL PARA ARMAZENAR O VALOR DA TENSÃO MEDIDA PELO SENSOR
@@ -221,6 +225,7 @@ NexButton cfs = NexButton(pageConfig,7, "cfs");
 NexNumber cf1 = NexNumber(pageConfig, 3, "cf1");
 NexNumber cf2 = NexNumber(pageConfig, 5, "cf2");
 
+NexNumber cf4 = NexNumber(pageConfig, 14, "cf4");
 NexNumber cf5 = NexNumber(pageConfig, 16, "cf5");
 NexNumber cf6 = NexNumber(pageConfig, 8, "cf6");
 NexNumber cf7 = NexNumber(pageConfig, 10, "cf7");
@@ -234,6 +239,7 @@ struct ConfigStruct { // estrutura do arqivo de configuraçao
   int timeBauncingTrolleyPendura;
   int notificationDuration;
   int breakTime;
+  int warningLight;
 };
 
 
@@ -262,28 +268,87 @@ NexTouch *nex_listen_list[] =
 #define TXD2 17  // Pino TX para Serial2 (ajuste conforme necessário)
 
 
-
 // Cria uma instância da estrutura de configuração
 ConfigStruct config;
 
+
+#include <Ethernet.h>
+#define HSPI_MISO 12
+#define HSPI_MOSI 13
+#define HSPI_SCLK 14
+#define HSPI_CS   33   // CS do W5500
+#define RESET_P	32				// Tie the Wiz820io/W5500 reset pin to ESP32 GPIO26 pin.
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+IPAddress ip(192, 168, 3, 15);
+IPAddress myDns(192, 168, 1, 1);
+IPAddress gateway(192, 168, 3, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+//SPIClass *vspi = NULL;
+//SPIClass *hspi = NULL;
+SPIClass vspi(VSPI); // Instância para o VSPI
+
+EthernetClient ethClient;
+PubSubClient client(ethClient);
+
 void setup() {
   Serial.begin(115200);   
- // Serial2.begin(115200);  // Para comunicação com a IHM Nextion
-   Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2); 
+  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);  // Para comunicação com a IHM Nextion
   dbSerialBegin(115200); // Para monitoramento no PC
+  dbSerialPrintln("serial iniciada");
+  
 
- delay(1000);
+   //Inicializar HSPI para W5500
+  //hspi = new SPIClass(HSPI);
+
+ // hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_CS);
+ SPI.begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_CS);
+  pinMode(HSPI_CS, OUTPUT);
+  digitalWrite(HSPI_CS, HIGH);
+
+ dbSerialPrintln("hspi iniciada");
+   delay(50);
+  // Inicializar VSPI para SD Card
+//  vspi = new SPIClass(VSPI);
+//  vspi->begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_CS_SD);
+//  pinMode(VSPI_CS_SD, OUTPUT);
+//  dbSerialPrintln("vspi iniciada");
+  // Inicializar Ethernet usando HSPI
+  delay(50);
+  Ethernet.init(HSPI_CS);  // Define o pino CS
+   WizReset();
+
+  // start the Ethernet connection:
+ Ethernet.begin(mac, ip, myDns, gateway, subnet); 
+ // if (Ethernet.begin(mac) == 0) {
+//    dbSerial.println("Failed to configure Ethernet using DHCP");
+  
+//  }else{
+ //   dbSerial.println("Ethernet W5500 inicializado");
+ //   dbSerial.print("Endereço IP: ");
+    dbSerial.println(Ethernet.localIP());
+// }
+ testaEthernet();
+dbSerial.printf("Free Heap: %d\n", ESP.getFreeHeap());
+
+ delay(100);
+
+if (client.connect("ContadorStaClient")) {
+    dbSerial.println("Conectado ao Broker MQTT!");
+  } else {
+    dbSerial.println("Falha ao conectar ao Broker MQTT.");
+  }
+  client.publish("contadorSta", "Contador STA v4 conectado!");
+  
+ delay(300);
   if (! rtc.begin()) { 
      dbSerial.println("falha no RTC");
   }dbSerial.println(" RTC carregado com sucesso");
 // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-delay(500);
 
+delay(300);
 
-pinMode(WP,OUTPUT); // pin proteçao da eeprom
-digitalWrite(WP,HIGH); // EEPROM MODO PROTEGIDO
-pinMode(Q0, OUTPUT);
-digitalWrite(Q0,HIGH);
 
   pinMode(latchPin, OUTPUT);
   pinMode(dataPin, OUTPUT);  
@@ -297,20 +362,29 @@ nexattachPops();
   dbSerial.println("CARREGANDO IHM...");
   delay(1000); // aguarde equanto a ihm inicializa
 
-
-     if (!SD.begin(CS_PIN)) {
+vspi.begin(VSPI_SCLK, VSPI_MISO, VSPI_MOSI, VSPI_CS_SD);
+  // Inicializar SD Card usando VSPI
+  if (!SD.begin(VSPI_CS_SD, vspi)) {
   dbSerial.println("SD card failed! ");
   sdCardFault = true;
    delay(500);
-    return;
+   return;
   }
   dbSerial.println("SD card Sucesso.");
   readConfig();
   delay(2000);
+
 } // end setup
+
 
 void loop() {
   nexLoop(nex_listen_list);
+
+client.loop(); 
+
+ if (!client.connected()) {
+ reconnect(); 
+ }
 
   //----------------------------------- Tempo de varredura troca de dados nextion --------------------------//
  if(carregaeeprom==0){
@@ -335,15 +409,16 @@ cloock = millis();
 if(noreaDescartPower){
 timeOffDescart ++;
 }else{timeOffDescart = 0;}
+
+dbSerial.printf("Free Heap: %d\n", ESP.getFreeHeap());
+
 } // end 1seg
 
 
 
   //-------------------------------------fim---------------------------------------------------//
 
- //if (dbSerial.available()>0) {  //se os dados for enviado pela serial
- // digitalWrite(Q0,HIGH);  //led built in
-//  } else {  digitalWrite(Q0,LOW); } //led built in 
+
  
 }// end loop
 
@@ -396,3 +471,102 @@ void updateShiftRegister()
 {  digitalWrite(latchPin, LOW);
    shiftOut(dataPin, clockPin, LSBFIRST, saida1); 
    digitalWrite(latchPin, HIGH); }
+
+
+/*
+void handleDownload() {
+    if (!server.hasArg("date")) {
+    server.send(400, "text/plain", "Parametro 'date' ausente");
+    return;
+  }
+
+  String dateArg = server.arg("date");
+  if (dateArg.length() != 7 && dateArg.length() != 8) { // Validação do comprimento
+    server.send(400, "text/plain", "Parametro 'date' inválido");
+    return;
+  }
+  String DataToFile = "/" + dateArg + ".csv";
+  File file = SD.open(DataToFile);
+  if (file) {
+    server.streamFile(file, "text/csv");
+    file.close();
+  } else {
+    server.send(404, "text/plain", "Arquivo nao encontrado");
+  }
+
+}
+
+
+
+extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte;
+extern uint32_t Carreta_Abatida[], Carreta_Descarte[];
+
+void handleCurrentData() {
+  StaticJsonDocument<300> doc;
+  doc["CarretaPosition"] = CarretaPosition;
+  doc["Carreta_Abatida"] = Carreta_Abatida[CarretaPosition];
+  doc["CarretaTotalAbatida"] = CarretaTotalAbatida;
+  doc["Carreta_Descarte"] = Carreta_Descarte[CarretaPosition];
+  doc["CarretaTotalDescarte"] = CarretaTotalDescarte;
+
+  String json;
+  serializeJson(doc, json); //Função para converter o JsonDocument em uma string JSON
+  //deserializeJson(): Função para converter uma string JSON em um JsonDocument.
+  server.send(200, "application/json", json);
+
+}
+
+void handleCsvToJson() {
+    if (!server.hasArg("date")) {
+    server.send(400, "text/plain", "Parametro 'date' ausente");
+    return;
+  }
+
+  String dateArg = server.arg("date");
+  if (dateArg.length() != 7 && dateArg.length() != 8) { // Validação do comprimento
+    server.send(400, "text/plain", "Parametro 'date' inválido");
+    return;
+  }
+  String DataToFile = "/" + dateArg + ".csv";
+  File file = SD.open(DataToFile);
+  if (!file) {
+    server.send(404, "text/plain", "Arquivo não encontrado");
+    return;
+  }
+  // Cria um documento JSON para armazenar os dados
+  StaticJsonDocument<2048> jsonDoc; // Ajuste o tamanho conforme necessário
+  JsonArray jsonArray = jsonDoc.to<JsonArray>();
+
+// Lê o arquivo CSV linha por linha
+  while (file.available()) {
+    // Lê uma linha do arquivo CSV
+    String line = file.readStringUntil('\n');
+    line.trim(); // Remove espaços em branco
+
+// Inicializa o índice e um buffer para armazenar a linha
+    int index = 0;
+    char buf[256];
+    strncpy(buf, line.c_str(), sizeof(buf));
+    buf[sizeof(buf) - 1] = 0; // Garante que o buffer seja terminado com nulo    
+
+    // Cria um objeto JSON para cada linha
+    JsonObject jsonObject = jsonArray.createNestedObject();
+    // Divide a linha CSV em colunas usando ',' como delimitador
+    char *token = strtok(buf, ",");
+    while (token != NULL) {
+      // Adiciona cada coluna ao objeto JSON com um índice como chave
+      jsonObject[String("col") + index] = token;
+      index++;
+      token = strtok(NULL, ",");
+    }
+  }
+
+  // Fecha o arquivo CSV
+  file.close();
+// Serializa o documento JSON em uma string
+  String json;
+  serializeJson(jsonDoc, json);
+  // Envia a resposta JSON para o cliente
+  server.send(200, "application/json", json);
+
+} */

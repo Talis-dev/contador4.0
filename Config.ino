@@ -1,10 +1,10 @@
-extern uint32_t timeStopDescart = 1, // min
+extern uint32_t timeStopDescart = 2, // min
 timeDelaySensorDescart = 2, // ms
 hooksToRestartCount = 3, // ganchos
-timeBauncingTrolleyPendura = 300, //
-notificationDuration = 1000, // tempo de duraçao da notificçao na home page
-breakTime = 10; // tempo de norea parada para registrar horario de pausa
-
+timeBauncingTrolleyPendura = 200, //
+notificationDuration = 2000, // tempo de duraçao da notificçao na home page
+breakTime = 10, // tempo de norea parada para registrar horario de pausa
+warningLight = 10;// tempo de luz qando troca de carreta
 
 extern bool sdCardFault;
 
@@ -16,6 +16,7 @@ void writeConfig(){
 cf1.getValue(&timeStopDescart);
 cf2.getValue(&timeDelaySensorDescart);
 
+cf4.getValue(&warningLight);
 cf5.getValue(&notificationDuration);
 cf6.getValue(&hooksToRestartCount);
 cf7.getValue(&timeBauncingTrolleyPendura);
@@ -28,6 +29,7 @@ config.hooksToRestartCount = hooksToRestartCount;
 config.timeBauncingTrolleyPendura = timeBauncingTrolleyPendura;
 config.notificationDuration = notificationDuration;
 config.breakTime = breakTime;
+config.warningLight = warningLight;
 
  File configFile = SD.open("/config.bin", FILE_WRITE);
 
@@ -69,6 +71,7 @@ hooksToRestartCount = config.hooksToRestartCount;
 timeBauncingTrolleyPendura = config.timeBauncingTrolleyPendura;
 notificationDuration = config.notificationDuration;
 breakTime = config.breakTime;
+warningLight = config.warningLight;
 
     // Exibe os valores lidos
     dbSerial.println("timeStopDescart: " + String(config.timeStopDescart));
@@ -77,7 +80,7 @@ breakTime = config.breakTime;
     dbSerial.println("timeBauncingTrolleyPendura: " + String(config.timeBauncingTrolleyPendura));
     dbSerial.println("notificationDuration: " + String(config.notificationDuration));
     dbSerial.println("breakTime: " + String(config.breakTime));
-
+    dbSerial.println("warningLight: " + String(config.warningLight));
 
 }
 
@@ -86,6 +89,7 @@ void setConfigDisplay(){
 cf1.setValue(timeStopDescart);
 cf2.setValue(timeDelaySensorDescart);
 
+cf4.setValue(warningLight);
 cf5.setValue(notificationDuration);
 cf6.setValue(hooksToRestartCount);
 cf7.setValue(timeBauncingTrolleyPendura);
