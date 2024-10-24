@@ -52,6 +52,7 @@ void b1call(void *ptr) { // botao pge 4 menu
  telaAtiva = 4; }
 
 void b2call(void *ptr) { // botao intervalo
+reboot = 0; // reseta o contador para tentar se reeconectar ao mqtt
  dbSerial.println("Botao intervalo prescionado");
  if(noreaRun ){
    IntervaloButton = true;
@@ -143,7 +144,7 @@ void vt3call(void *ptr) { // botao voltar na pge 4
 
 void z0call(void *ptr) { //bt finaliza abate
 tempoDePausa = "Não houve Parada";
-Log_Carreta();
+postDataServer();
 notificationSD = true; 
 telaAtiva = 0;
 }

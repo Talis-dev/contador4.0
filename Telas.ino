@@ -1,12 +1,12 @@
 extern uint32_t atualizaVar,timeStopDescart;
 extern uint32_t imagem1,imagem2,imagem3,imagem4,imagem5,imagem6;
-int Ant1=0,Ant2=0,Ant3=0,Ant4=0,Ant5=0;
+int Ant1=0,Ant2=0,Ant3=0,Ant4=0,Ant5=0,Ant6=0;
 extern uint32_t botaoHRvar,diavar,mesvar,anovar,horavar,minutvar,segunvar;
 extern int BitPcf,timeOffDescart;
 int sethra[5] = {0};
 extern int  soma = 0, telaAtiva = 0;
 extern int BAR;
-extern bool InputPCF[7] = {false} , sdCardFault, sdCardFaultPrevious = true, mensageActive = 1;
+extern bool InputPCF[7] = {false}, mensageActive = 1, connected = false;
 bool SinglePageLoad = false, notify = false;
 char time_buf[30] = {0};
 extern String voltFloat, DateAndHora_Str,DataToFile;
@@ -44,7 +44,7 @@ dlay4 = millis();
 time_buf[30] = {0};
 String HR; /// formatação da hora e data             
 HR += String(Timex[0],DEC);
-DataToFile="/";
+DataToFile="";
 DataToFile += String(Timex[0],DEC);
 HR += " de ";
 HR += meses[Timex[1]];
@@ -60,22 +60,25 @@ HR += ":";
 HR += String(Timex[5],DEC);
 DateAndHora_Str=HR; // string para salvar no sd card
 HR.toCharArray(time_buf, 30); // converte string para char com tamanho 30
+
+if(!client.state()){
+  connected = true;
+}else{
+connected = false;
+}
+//dbSerial.print("client status = ");
+//dbSerial.println(client.state());
 }
 
 
 if(telaAtiva==0){               // sequencial de telas // carrega somente a tela aberta
 // tela home 
-if(sdCardFaultPrevious){
-  sdCardFaultPrevious = false;
 
-  if(sdCardFault){
-    imagem6 = 5; // sd em falha
+  if(connected){
+    imagem6 = 6; // conexao ok
     }else{
-      imagem6 = 6;} // sd ok
+      imagem6 = 5;} // conexao falha
 
-p5.setPic(imagem6);
-p4.setPic(imagem5);
-}
 
 if(InputPCF[7]){
 imagem1=0;
@@ -104,6 +107,7 @@ if(imagem4 != Ant4){Ant4 = imagem4;p3.setPic(imagem4);  }
 
 if(imagem5 != Ant5){Ant5 = imagem5;p4.setPic(imagem5);  }
 
+if(imagem6 != Ant6){Ant6 = imagem6;p5.setPic(imagem6);  }
 
 if(millis() - tempo_espera > 1010){
 tempo_espera = millis();
@@ -154,7 +158,7 @@ descartAnterior = CarretaTotalDescarte;
 }
 }
 
-}else{sdCardFaultPrevious = true;} // inverte o stado somente para obter feedback
+}
 
 
 if(telaAtiva == 5){
@@ -196,7 +200,7 @@ if(telaAtiva == 0 && millis() - currentTimeHorToTxt >= 1001){
 currentTimeHorToTxt = millis();
 
 
-if(mensageActive && millis() - currentTimeMessage >= notificationDuration){ // tempo de duraçao da notificaçao
+if(mensageActive && millis() - currentTimeMessage >= notificationDuration*1000){ // tempo de duraçao da notificaçao
 //bt1.setText("CONTADOR  ON");
 mensageActive = false;
 sendCommand("vis nfy,0");

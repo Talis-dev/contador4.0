@@ -1,6 +1,4 @@
-extern uint32_t timeStopDescart, //min
-timeDelaySensorDescart, //ms
-hooksToRestartCount; //ganchos
+extern uint32_t hooksToRestartCount; //ganchos
  extern String horaInicio, tempoDePausa;
 
 extern int CarretaPosition = 1,CarretaTotalAbatida = 0;
@@ -23,7 +21,7 @@ void Contagem_Abatida() {
   if(ContadorON){
 
 
- if(InputPCF[7] && InputPCF[6] && noreaRun && millis() - TimeBauncing > timeBauncingTrolleyPendura ){ // [7] gancho aves  [6] sensor gancho
+ if(InputPCF[7] && InputPCF[6] && noreaRun && millis() - TimeBauncing > timeBauncingTrolleyPendura*10 ){ // [7] gancho aves  [6] sensor gancho
   TimeBauncing = millis();
 
  if(Carreta_Abatida[CarretaPosition] == 0){ // registra hora do inicio da contagem
@@ -105,7 +103,7 @@ SwapActivate = true;
 }
 
 if(SwapActivate && countToSwap >= hooksToRestartCount){ // se a contagem chegar a quantidade definida de aves, resete e mude de carreta
-Log_Carreta();
+postDataServer();
 SwapActivate = false;
 countToSwap = 0;
 
@@ -217,14 +215,16 @@ noreaRun = false; // norea parada
  }
 
 
-void notificationSdCardAfterChange(){
-if(notificationSD && millis() - currentTimeMessageSD >= notificationDuration + 500){ // tempo de duraçao da notificaçao sd card apos trocar de carrta
+void notificationSdCardAfterChange(){ // funcao executada apos tentativa de gravaçao no servidor evia notfy se sucesso ou falha
+if(notificationSD && millis() - currentTimeMessageSD >= notificationDuration*1000 + 800){ // tempo de duraçao da notificaçao sd card apos trocar de carrta
 
-if(sdCardWriteSuccessful){
-showNotification("DADOS DA CARRETA SALVO COM SUCESSO!",2);
-sdCardWriteSuccessful = false;
+if(server_response){
+showNotification("Dados enviados com sucesso!",2);
 }else{
-showNotification("ERRO NA GRAVAÇAO verifique o SDcard!",1);
+  String mqttError = "ERROR ";
+  mqttError += client.state();
+  mqttError +=" Falha ao enviar dados!";
+showNotification(mqttError.c_str(),1);
 }
 notificationSD = false;
 } 

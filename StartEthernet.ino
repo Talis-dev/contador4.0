@@ -8,11 +8,11 @@ void WizReset() {
     dbSerial.print("Resetting Wiz Ethernet Board...  ");
     pinMode(RESET_P, OUTPUT);
     digitalWrite(RESET_P, HIGH);
-    delay(100);
-    digitalWrite(RESET_P, LOW);
     delay(150);
+    digitalWrite(RESET_P, LOW);
+    delay(200);
     digitalWrite(RESET_P, HIGH);
-    delay(550);
+    delay(500);
     dbSerial.println("Done.");
 }
 
@@ -85,6 +85,9 @@ void testaEthernet(){
     } else {
         dbSerial.println(" Ethernet OK");
         ehternet_conected = 1;
+
+  // delay(100);
+
     }
 
 }

@@ -1,13 +1,10 @@
 extern uint32_t timeStopDescart = 2, // min
-timeDelaySensorDescart = 2, // ms
-hooksToRestartCount = 3, // ganchos
-timeBauncingTrolleyPendura = 200, //
-notificationDuration = 2000, // tempo de duraçao da notificçao na home page
-breakTime = 10, // tempo de norea parada para registrar horario de pausa
-warningLight = 10;// tempo de luz qando troca de carreta
-
-extern bool sdCardFault;
-
+timeDelaySensorDescart = 20, // ms
+hooksToRestartCount = 15, // ganchos
+timeBauncingTrolleyPendura = 20, //
+notificationDuration = 2, // tempo de duraçao da notificçao na home page
+breakTime = 1, // tempo de norea parada para registrar horario de pausa
+warningLight = 1;// tempo de luz qando troca de carreta
 
 
 
@@ -23,64 +20,36 @@ cf7.getValue(&timeBauncingTrolleyPendura);
 cf8.getValue(&breakTime);
 
 
-config.timeStopDescart = timeStopDescart;
-config.timeDelaySensorDescart = timeDelaySensorDescart;
-config.hooksToRestartCount = hooksToRestartCount;
-config.timeBauncingTrolleyPendura = timeBauncingTrolleyPendura;
-config.notificationDuration = notificationDuration;
-config.breakTime = breakTime;
-config.warningLight = warningLight;
+if (MyEEPROM.read(1) != timeStopDescart) { MyEEPROM.write(1,timeStopDescart); }
+if (MyEEPROM.read(2) != timeDelaySensorDescart) { MyEEPROM.write(2,timeDelaySensorDescart); }
 
- File configFile = SD.open("/config.bin", FILE_WRITE);
+if (MyEEPROM.read(4) != warningLight) { MyEEPROM.write(4,warningLight); }
+if (MyEEPROM.read(5) != notificationDuration) { MyEEPROM.write(5,notificationDuration); }
+if (MyEEPROM.read(6) != hooksToRestartCount) { MyEEPROM.write(6,hooksToRestartCount); }
+if (MyEEPROM.read(7) != timeBauncingTrolleyPendura) { MyEEPROM.write(7,timeBauncingTrolleyPendura); }
+if (MyEEPROM.read(8) != breakTime) { MyEEPROM.write(8,breakTime); }
 
-  if (!configFile) {
-        dbSerial.println("Erro ao abrir config.bin para escrita.");
-        sdCardFault = true;
-        return;
-    }
 
-    // Escreve a estrutura config no arquivo binário
-    configFile.write((uint8_t*)&config, sizeof(config));
-    configFile.close();
-    dbSerial.println("Configurações salvas com sucesso.");
 
+dbSerial.println("Configurações salvas com sucesso.");
 delay(50);
 txtcf.setText("Salvo com Sucesso!");
 readConfig();
 }
 
 void readConfig(){
-  // Abre o arquivo config.bin no modo de leitura binária
-    File configFile = SD.open("/config.bin", FILE_READ);
-
-  if (!configFile) {
-        dbSerial.println("Erro ao abrir config.bin para leitura.");
-        sdCardFault = true;
-        return;
-    }
-
-    // Lê o conteúdo do arquivo e armazena na estrutura config
-    configFile.read((uint8_t*)&config, sizeof(config));
-    configFile.close();
-    dbSerial.println("Configurações carregadas com sucesso.");
 
 
-timeStopDescart = config.timeStopDescart;
-timeDelaySensorDescart = config.timeDelaySensorDescart;
-hooksToRestartCount = config.hooksToRestartCount;
-timeBauncingTrolleyPendura = config.timeBauncingTrolleyPendura;
-notificationDuration = config.notificationDuration;
-breakTime = config.breakTime;
-warningLight = config.warningLight;
+timeStopDescart = MyEEPROM.read(1);
+timeDelaySensorDescart = MyEEPROM.read(2);
 
-    // Exibe os valores lidos
-    dbSerial.println("timeStopDescart: " + String(config.timeStopDescart));
-    dbSerial.println("timeDelaySensorDescart: " + String(config.timeDelaySensorDescart));
-    dbSerial.println("hooksToRestartCount: " + String(config.hooksToRestartCount));
-    dbSerial.println("timeBauncingTrolleyPendura: " + String(config.timeBauncingTrolleyPendura));
-    dbSerial.println("notificationDuration: " + String(config.notificationDuration));
-    dbSerial.println("breakTime: " + String(config.breakTime));
-    dbSerial.println("warningLight: " + String(config.warningLight));
+warningLight = MyEEPROM.read(4);
+notificationDuration = MyEEPROM.read(5);
+hooksToRestartCount = MyEEPROM.read(6);
+timeBauncingTrolleyPendura = MyEEPROM.read(7);
+breakTime = MyEEPROM.read(8);
+
+dbSerial.println("Configurações carregadas com sucesso.");
 
 }
 
@@ -95,4 +64,3 @@ cf6.setValue(hooksToRestartCount);
 cf7.setValue(timeBauncingTrolleyPendura);
 cf8.setValue(breakTime);
 }
-
