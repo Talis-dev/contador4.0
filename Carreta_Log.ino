@@ -25,16 +25,15 @@ carreta_position += CarretaPosition;
 String avesAbatida = String(Carreta_Abatida[CarretaPosition]);
 String avesDescarte = String(Carreta_Descarte[CarretaPosition]);
  
-  StaticJsonDocument<256> jsonDoc;
+  StaticJsonDocument<2560> jsonDoc;
 
   // Adicionar dados ao JSON
-  jsonDoc["DataToFile"] = DataToFile;
   jsonDoc["Carreta"] = CarretaPosition;
   jsonDoc["HoraInicio"] = horaInicio;
   jsonDoc["AvesAbatida"] = avesAbatida;
   jsonDoc["AvesDescarte"] = avesDescarte;
   jsonDoc["TempoPausa"] = tempoDePausa;
-  jsonDoc["DataHoraFinalizada"] = DateAndHora_Str;
+  jsonDoc["HoraFinalizada"] = DateAndHora_Str;
     // FileCsv.println("\"Carreta Nº\",\"Hora de Inicio\",\"Total Aves\",\"Total Descarte\",\"Parada/Intervalo\",\"Data e Hora Finalizada\"");  // CRIA COLUNAS
 
   String jsonStr;

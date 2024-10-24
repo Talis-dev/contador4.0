@@ -276,6 +276,7 @@ void conectMQTT(){
  // client.setClient(ethClient);
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+  client.setBufferSize(4024);
 }
 
 void setup() {
@@ -419,7 +420,7 @@ if (strcmp(topic,"server_response")==0){
   }
 
 if (strcmp(topic,"request/currentDataBasic")==0){
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<350> doc;
   doc["CarretaPosition"] = CarretaPosition;
   doc["Carreta_Abatida"] = Carreta_Abatida[CarretaPosition];
   doc["CarretaTotalAbatida"] = CarretaTotalAbatida;
@@ -433,7 +434,7 @@ if (strcmp(topic,"request/currentDataBasic")==0){
 
 
 if (strcmp(topic, "request/currentData") == 0) {
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<2560> doc;
   bool dataInsert = false; 
 
   for (int i = 1; i <= 20; i++) {

@@ -26,6 +26,7 @@ void reconnect() {
           mqttError += client.state();
           mqttError +=" Falha na conexao.";
           showNotification(mqttError.c_str(),1);
+          conectMQTT();
 
         dbSerial.println(mqttError);
         reboot++;
