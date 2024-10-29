@@ -10,6 +10,9 @@ mt.attachPop(mtcall, &mt);//bt chama tela mortalidade
 cf.attachPop(cfcall, &cf);//bt chama tela config
 cfs.attachPop(cfscall, &cfs);//bt salvar configuraçoes
 
+p5.attachPop(p5call, &p5);//imagem db on/off, cptura toque
+rs.attachPop(rscall, &rs);//bt reenviar dados da carreta anterior caso falhe
+
 z0.attachPop(z0call, &z0);//bt  salvar e finalizar abate
 z1.attachPop(z1call, &z1);//bt zera total page menu
 z2.attachPop(z2call, &z2);//bt zera descarte page menu
@@ -52,7 +55,6 @@ void b1call(void *ptr) { // botao pge 4 menu
  telaAtiva = 4; }
 
 void b2call(void *ptr) { // botao intervalo
-reboot = 0; // reseta o contador para tentar se reeconectar ao mqtt
  dbSerial.println("Botao intervalo prescionado");
  if(noreaRun ){
    IntervaloButton = true;
@@ -79,6 +81,11 @@ pulsesPerHour = 0;
 }
 }
 
+void p5call(void *ptr) { // bt liga desliga norea descarte
+dbSerial.println("Evento de toque imagem p5 prescionado!");
+reboot = 0; // reseta o contador para tentar se reeconectar ao mqtt
+reconnect();
+}
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
 
 
@@ -101,6 +108,11 @@ void vt4call(void *ptr) { // bt voltar na page 3 mort para page 1 carretas
  telaAtiva = 1;
  Load_Abatido();
 }
+void rscall(void *ptr) {
+  dbSerial.println("Botao reesend prescionado!");
+ReesendDate();
+}
+
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
 
 

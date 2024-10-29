@@ -89,6 +89,7 @@ extern bool sdCardFault = false,noreaDescartPower = false;
 extern int timeOffDescart = 0;
 extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte;
 extern uint32_t Carreta_Abatida[], Carreta_Descarte[];
+bool satInitialized = false; // variavel para atualizar data e hra apenas na inicializaçao
 
 //----------------------------------------------------ENDEREÇO NEXTION IHM tela 0 home ---------------------------------------------------//
 NexText nfy = NexText(0, 1, "nfy"); // notificaçao
@@ -161,6 +162,7 @@ NexVariable va0 = NexVariable(PageCarretas, 23, "va0"); // variavel de retorno
 
 int PageMortalidade = 3;
 NexButton vt4   = NexButton(PageMortalidade, 29, "vt4"); // botao voltar
+NexButton rs   = NexButton(PageMortalidade, 46, "rs"); // botao reenviar dados da ultima carreta
 
 NexNumber n17 = NexNumber(PageMortalidade, 2, "n0");
 NexNumber n18 = NexNumber(PageMortalidade, 4, "n1");
@@ -200,12 +202,7 @@ NexNumber minut = NexNumber(pageHora, 11, "minut");
 NexNumber segun = NexNumber(pageHora, 12, "segun");
 
 extern uint32_t botaoHRvar = 0;
-extern uint32_t diavar = 0;
-extern uint32_t mesvar = 0;
-extern uint32_t anovar = 0;
-extern uint32_t horavar = 0;
-extern uint32_t minutvar = 0;
-extern uint32_t segunvar = 0;
+extern uint32_t diavar = 0, mesvar = 0, anovar = 0, horavar = 0, minutvar = 0, segunvar = 0;
 bool carregaeeprom = 0;
 int horaAnterior = 0;
 
@@ -258,11 +255,11 @@ extern bool connected,ContadorON;
 NexTouch *nex_listen_list[] = 
 {
  &atualiza,&vt1,&mt,//page 1 carretas
-&b0,&b1,&b2, //page 0 home
+&b0,&b1,&b2,&p5, //page 0 home
 &bt0,&bt1,&hor,//page 0 home
 &vt2, &botaoHR,// page 5 hora
 &vt3,&cf,&z0,&z1,&z2,&z3,&z4,&z5,&z6, //page 4 menu
-&vt4, //page 3 mortalidade
+&vt4,&rs, //page 3 mortalidade
 &vt5,&cfs, //page 6 config
     NULL
 };
@@ -418,6 +415,26 @@ dbSerial.println(PayLoad);
 if (strcmp(topic,"server_response")==0){
   server_response = true;
   }
+
+
+if (!satInitialized && strcmp(topic,"server_return_date")==0){
+StaticJsonDocument<256> doc;
+DeserializationError error = deserializeJson(doc, PayLoad);
+  if (error) {
+    dbSerial.print("Erro ao analisar JSON: date");
+    return;
+  }
+  diavar = doc["dia"];
+  mesvar = doc["mes"];
+  anovar = doc["ano"];
+  horavar = doc["hora"];
+  minutvar = doc["min"];
+  segunvar = doc["seg"];
+  delay(100);
+  rtc.adjust(DateTime(anovar,mesvar,diavar,horavar,minutvar,segunvar)); // sethra rtc ano/mes/dia  /hora/minuto/segundo
+  satInitialized = true;
+  }
+
 
 if (strcmp(topic,"request/currentDataBasic")==0){
   StaticJsonDocument<350> doc;

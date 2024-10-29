@@ -103,3 +103,23 @@ if(ReesendActive && millis() - timeReesend > 5000){
 }
 
 }
+
+
+void ReesendDate(){
+
+ if (client.publish("topic/carretaData", quarantineData.c_str())) {
+  
+  dbSerial.println("Dados reenviados com sucesso!!");
+  showNotification("Dados reenviado com sucesso!",3);
+  contReesend = 0; //finaliza funcao
+  ReesendActive = false;
+  sdCardWriteSuccessful = true;
+  rs.setText("Enviado com Sucesso!\rSTA reponse: ACK");
+
+ }else{
+  client.publish("customer_response","ACK"); // envia um sinal de status para testar a conexao
+   showNotification("Falha ao reenviar. tente novamente",1);
+    dbSerial.println("ERROR SERVIDOR SEM SINAL.");
+ }
+
+}

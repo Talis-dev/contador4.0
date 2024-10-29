@@ -17,8 +17,8 @@ void reconnect() {
       // Tenta se conectar ao broker MQTT
       if (client.connect("ContadorStaClient")) {
         Serial.println("ok Conectado ao broker MQTT!");
-        client.publish("contadorSta", "Contador STA V4.0 conectado!");
-        showNotification("Contador STA V4.0 conectado!",2);
+        client.publish("contadorSat", "Contador SAT V4.0 conectado!");
+        showNotification("Contador SAT V4.0 conectado!",2);
         Ssubscribe();  // Inscreve nos tópicos necessários
         reboot = 0;    // Reseta o contador de tentativas
       } else {
