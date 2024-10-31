@@ -1,4 +1,4 @@
-extern String DateAndHora_Str = "", DataToFile = "",horaInicio = "",tempoDePausa = "Não houve Parada";
+extern String DateAndHora_Str = "",horaInicio = "",tempoDePausa = "Não houve Parada";
 extern bool sdCardFault;
 extern bool sdCardWriteSuccessful = false, server_response = false, ReesendActive = false;
 

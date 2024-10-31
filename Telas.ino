@@ -42,24 +42,16 @@ dlay4 = millis();
 
 
 time_buf[30] = {0};
-String HR; /// formatação da hora e data             
-HR += String(Timex[0],DEC);
-DataToFile="";
-DataToFile += String(Timex[0],DEC);
-HR += " de ";
-HR += meses[Timex[1]];
-DataToFile += String(Timex[1],DEC);
-HR += " de ";
-HR += String(Timex[2] % 100, DEC); // recebe somente os 2 ultimo numero do ano
-DataToFile += String(Timex[2],DEC);
-HR += " - ";
-HR += String(Timex[3],DEC);
-HR += ":";
-HR += String(Timex[4],DEC);
-HR += ":";
-HR += String(Timex[5],DEC);
-DateAndHora_Str=HR; // string para salvar no sd card
-HR.toCharArray(time_buf, 30); // converte string para char com tamanho 30
+snprintf(time_buf, sizeof(time_buf), "%02d de %s de %02d - %02d:%02d:%02d", 
+         Timex[0],                      // Dia
+         meses[Timex[1]],               // Mês (nome do mês em texto)
+         Timex[2] % 100,                // Ano (últimos dois dígitos)
+         Timex[3],                      // Hora
+         Timex[4],                      // Minuto
+         Timex[5]);                     // Segundo
+
+DateAndHora_Str = String(time_buf); // string para salvar data da carreta
+
 
 if(!client.state()){
   connected = true;
@@ -220,9 +212,9 @@ void showNotification(const char* message, int numberColor) {
   currentTimeMessage = millis();
    mensageActive = true;
     sendCommand("vis nfy,1");
- delay(20);
+ delay(10);
      nfy.setText(message);
-  delay(20);    
+  delay(10);    
        // Altera a cor do texto de acordo com o valor de numeroDe1A3
     switch (numberColor) {
         case 1:
