@@ -4,7 +4,9 @@ const long reconnectInterval = 8000;     // Intervalo de 5 segundos para tentar 
 
 void reconnect() {
   if (!client.connected() && reboot < 9) {
+
     unsigned long currentMillis = millis();  // Tempo atual
+
 
     // Verifica se o intervalo de tempo entre as tentativas foi atingido
     if (currentMillis - lastReconnectAttempt >= reconnectInterval) {

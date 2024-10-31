@@ -156,7 +156,8 @@ void vt3call(void *ptr) { // botao voltar na pge 4
 
 void z0call(void *ptr) { //bt finaliza abate
 tempoDePausa = "Não houve Parada";
-postDataServer();
+postDataServer();// envia a ultima carreta e limpa os dados
+finalizaAbate();// executa funcao para voltar do inicio
 notificationSD = true; 
 telaAtiva = 0;
 }

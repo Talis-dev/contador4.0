@@ -27,7 +27,7 @@
 //#include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-const char* mqtt_server ="192.168.0.26";
+const char* mqtt_server ="192.168.3.200";
 
 extern PCF8574 PCF(0x3D); // enderesso modulos saidas i2c
 
@@ -346,7 +346,7 @@ client.loop();
 if (!client.connected()) {
     reconnect(); 
     }
-
+InputsBitPCF();// verifica as entradas
   //----------------------------------- Tempo de varredura troca de dados nextion --------------------------//
  if(carregaeeprom==0){
   carregaeeprom = 1;
@@ -355,7 +355,6 @@ if (!client.connected()) {
   if (millis() - Tvarre > 50 ) {
     BitPcf = PCF.read8(); // faz a leitura do pcf
     Tvarre = millis();
-    InputsBitPCF();// verifica as entradas
     Varredura();
     noreaDescart();
   }

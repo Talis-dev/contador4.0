@@ -15,6 +15,11 @@ unsigned int pulseCount = 0;
 extern int pulsesPerMinute = 0,pulsesPerHour = 0;
 
 
+#define NUM_PULSOS 10
+unsigned long pulseDurations[NUM_PULSOS] = {0}; // Armazena os últimos 10 pulsos
+int pulseIndex = 0;
+bool leituraEstavel = false;
+
 void Contagem_Abatida() { 
 
 
@@ -57,36 +62,59 @@ notificationSdCardAfterChange();
   }
 }
 
-void medirVelocidade() {
-    unsigned long currentTime = millis();
+#define NUM_PULSOS 10
+unsigned long pulseDurations[NUM_PULSOS] = {0};
+int pulseIndex = 0;
+bool leituraEstavel = false;
 
-    if (InputPCF[6] && (currentTime - lastDebounceTime) > 150) {
+void medirVelocidade() {
+    unsigned long currentTime = micros();
+    unsigned long debounceTime = (avgPulseDuration > 2000000) ? 200000 : 100000; // Debounce ajustável
+
+    if (InputPCF[6] && (currentTime - lastDebounceTime) > debounceTime) {
         lastDebounceTime = currentTime;
 
         unsigned long pulseDuration = currentTime - lastPulseTime;
-        lastPulseTime = currentTime; 
+        lastPulseTime = currentTime;
 
-        pulseCount++;
-        // Calcula a velocidade em pulsos por minuto
-        pulsesPerMinute = 60000.0 / pulseDuration;
-        pulsesPerHour = pulsesPerMinute * 60;
-      
-      if(pulsesPerMinute > 360){
-        noreaRun = false;
-        pulsesPerMinute = 0;
-        pulsesPerHour = 0;        
-      }else{
-              noreaRun = true; // norea rodando
-      }
+        // Ignora pulsos anômalos
+        if (leituraEstavel && (pulseDuration < (avgPulseDuration * 0.5))) {
+            return;
+        }
 
+        pulseDurations[pulseIndex] = pulseDuration;
+        pulseIndex = (pulseIndex + 1) % NUM_PULSOS;
+
+        if (pulseIndex == 0) leituraEstavel = true;
+
+        if (leituraEstavel) {
+            unsigned long totalDuration = 0;
+            for (int i = 0; i < NUM_PULSOS; i++) {
+                totalDuration += pulseDurations[i];
+            }
+            float avgPulseDuration = totalDuration / (float)NUM_PULSOS;
+
+            pulsesPerMinute = (60000000.0 / avgPulseDuration);
+            pulsesPerHour = pulsesPerMinute * 60;
+
+            if (pulsesPerMinute > 360) { // Caso o sensor fique acionado direto // Limite máximo de segurança
+                noreaRun = false;
+                pulsesPerMinute = 0;
+                pulsesPerHour = 0;
+            } else {
+                noreaRun = true;
+            }
+        }
     }
-  // Se não houver pulsos por mais de 1000ms, definir noreaRun como falso
-   if ( (currentTime - lastPulseTime) > 2000) {
+    
+    // Se não houver pulsos por mais de 2 segundos
+    if ((micros() - lastPulseTime) > 2000000) {
         noreaRun = false;
         pulsesPerMinute = 0;
-        pulsesPerHour = 0;     
-   }
+        pulsesPerHour = 0;
+    }
 }
+
 
 void SwapTrailer(){ // troca de carreta
 
@@ -228,4 +256,13 @@ showNotification(mqttError.c_str(),1);
 }
 notificationSD = false;
 } 
+}
+
+
+void finalizaAbate(){
+    tempoDePausa = "Não houve Parada";
+    functionExecuted = false; 
+    resumedCounting = false; 
+    quntidade_pausa = 1;
+
 }
