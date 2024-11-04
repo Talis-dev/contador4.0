@@ -14,7 +14,7 @@ Log_Carreta();
 }
 
 void Log_Carreta(){
-// TODO: adicionar confg n de tentativas de reenvio e tempo para reenviar
+// TODO: adicionar confg num de tentativas de reenvio e tempo para reenviar 
 
 
 //DataToFile +=".csv";
@@ -58,7 +58,7 @@ delay(50);
 
 void ResendIfFailed(){
 
-if(ReesendActive && millis() - timeReesend > 5000){
+if(ReesendActive && millis() - timeReesend > 10000){
 
     if(!server_response && !contReesend){
     dbSerial.println("ERRO verifique a conexao! sinal de vida nao recebido");
@@ -87,7 +87,7 @@ if(ReesendActive && millis() - timeReesend > 5000){
 
  }else{
   client.publish("customer_response","ACK"); // envia um sinal de status para testar a conexao
-   showNotification("Falha ao reenviar. nova Tentativa em 5s",1);
+   showNotification("Falha ao reenviar. nova Tentativa em 10s",1);
     dbSerial.println("ERROR SERVIDOR SEM SINAL. Reenviando!");
  }
 

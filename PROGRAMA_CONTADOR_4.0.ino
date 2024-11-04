@@ -83,8 +83,7 @@ float valorR2 = 7500.0; // VALOR DO RESISTOR 2 DO DIVISOR DE TENSÃO
 float tensaoMedia = 0.0, ResultMedia = 0.0;
 float bufferMedia[6] = {0.0};
 int bufferVR = 0;
-extern String voltFloat = "";
-char voltC[4];
+extern char voltC[5] = {0};
 extern bool sdCardFault = false,noreaDescartPower = false;
 extern int timeOffDescart = 0;
 extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte;
@@ -496,36 +495,40 @@ bateria();
 }//end calculos
 
 
-void bateria(){
-tensaoEntrada = analogRead(ANALOG_PIN_1)*3.3/3750; //VARIÁVEL RECEBE O RESULTADO D
-dbSerial.print("tensao Entrada: ");
-dbSerial.print(tensaoEntrada);
-tensaoMedida = tensaoEntrada / (valorR2/(valorR1+valorR2)); //VARIÁVEL RECEBE O VALOR DE TENSÃO DC MEDIDA PELO SENSOR
- // tensaoMedida = tensaoEntrada / 0,2; 
- //tensaoMedida =+ 0.5;
-dbSerial.print("   tensao Calculada: ");
-dbSerial.print(tensaoMedida);
-dbSerial.print("   tensao Média: ");
-dbSerial.println(tensaoMedia);
+void bateria() {
+    // Calcular a tensão de entrada
+    float tensaoEntrada = analogRead(ANALOG_PIN_1) * 3.3 / 3750.0;
+    dbSerial.print("Tensao Entrada: ");
+    dbSerial.print(tensaoEntrada);
 
-bufferVR++;
+    // Pré-calcular fator de divisão para evitar operação constante
+    const float divisor = valorR2 / (valorR1 + valorR2);
+    float tensaoMedida = tensaoEntrada / divisor;
+    dbSerial.print("   Tensao Calculada: ");
+    dbSerial.print(tensaoMedida);
+   // dbSerial.print("   Tensao Media: ");
+   // dbSerial.println(tensaoMedia);
+       
+       
+    bufferVR++;
 
-if (bufferVR < 6){
-  bufferMedia[bufferVR] = tensaoMedida;
-}else{
- for (int i = 0; i < 6; ++i) {
- ResultMedia += bufferMedia[i];
-  }
- tensaoMedia = ResultMedia / 5;
- bufferVR = 0;
- ResultMedia = 0.0;
+    // Armazenar valor no buffer e calcular média a cada 6 leituras
+    if (bufferVR <= 6) {
+       // bufferMedia[bufferVR] = tensaoMedida;
+    } else {  dtostrf(tensaoMedida, 4, 2, voltC); bufferVR = 0;}
 
- char *voltresult = dtostrf(tensaoMedia,4,2,voltC); //float to char, (char,numdechar,numdecimal,variavelchar)
-voltFloat = String(voltresult);
+     /*   float soma = 0.0;
+        for (int i = 0; i < 6; ++i) {
+            soma += bufferMedia[i];
+        }
+        tensaoMedia = soma / 6.0;
+        bufferVR = 0;
 
+        // Convertendo float para char diretamente
+        dtostrf(tensaoMedia, 4, 2, voltC);
+    }*/
 }
 
-}
 
 void updateShiftRegister()
 {  digitalWrite(latchPin, LOW);

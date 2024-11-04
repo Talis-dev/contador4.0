@@ -62,12 +62,9 @@ notificationSdCardAfterChange();
   }
 }
 
-#define NUM_PULSOS 10
-unsigned long pulseDurations[NUM_PULSOS] = {0};
-int pulseIndex = 0;
-bool leituraEstavel = false;
 
 void medirVelocidade() {
+   static float avgPulseDuration = 0;
     unsigned long currentTime = micros();
     unsigned long debounceTime = (avgPulseDuration > 2000000) ? 200000 : 100000; // Debounce ajustável
 
@@ -92,7 +89,7 @@ void medirVelocidade() {
             for (int i = 0; i < NUM_PULSOS; i++) {
                 totalDuration += pulseDurations[i];
             }
-            float avgPulseDuration = totalDuration / (float)NUM_PULSOS;
+             avgPulseDuration = totalDuration / (float)NUM_PULSOS;
 
             pulsesPerMinute = (60000000.0 / avgPulseDuration);
             pulsesPerHour = pulsesPerMinute * 60;

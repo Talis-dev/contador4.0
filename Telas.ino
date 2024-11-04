@@ -9,12 +9,11 @@ extern int BAR;
 extern bool InputPCF[7] = {false}, mensageActive = 1, connected = false;
 bool SinglePageLoad = false, notify = false;
 char time_buf[30] = {0};
-extern String voltFloat, DateAndHora_Str,DataToFile;
+extern String DateAndHora_Str,DataToFile;
 int Tempo_anterior = 0, soma2 = 0;
 int long dlyihm = 0, tempo_espera = 0,tempo_espera2 = 0, dlay = 0, dlay4 = 0;
-extern float tensaoMedia;
 unsigned long currentTimeMessage = 0, currentTimeHorToTxt = 0;
-
+extern char voltC[5];
 const char* meses[] = {"","Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"};
 
 
@@ -110,10 +109,7 @@ hor.setText(time_buf); // envia txt formato char data e hora
  
  }*/
 
-
-char bat_buf[5];
-voltFloat.toCharArray(bat_buf, 5);
-bat.setText(bat_buf);
+bat.setText(voltC);// envia tensao media calculada
 
 char timeDesc_buf[4];
 int timeDec = timeStopDescart - timeOffDescart;

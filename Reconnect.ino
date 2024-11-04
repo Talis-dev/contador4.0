@@ -1,6 +1,6 @@
 extern int reboot = 0;
 unsigned long lastReconnectAttempt = 0;  // Armazena o tempo do último loop de tentativa de conexão
-const long reconnectInterval = 8000;     // Intervalo de 5 segundos para tentar reconectar
+const long reconnectInterval = 8000;     // Intervalo de 8 segundos para tentar reconectar
 
 void reconnect() {
   if (!client.connected() && reboot < 9) {
@@ -12,9 +12,12 @@ void reconnect() {
     if (currentMillis - lastReconnectAttempt >= reconnectInterval) {
       lastReconnectAttempt = currentMillis;  // Atualiza o tempo da última tentativa
 
-      testaEthernet();
+     
       dbSerial.print("Conectando ao broker MQTT...");
-      showNotification("Conectando ao broker MQTT...",2);
+      
+          String status = "Conectando ao broker MQTT.eth: ";
+          status += Ethernet.linkStatus();
+          showNotification(status.c_str(),2);
       
       // Tenta se conectar ao broker MQTT
       if (client.connect("ContadorStaClient")) {
