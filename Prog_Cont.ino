@@ -257,6 +257,12 @@ notificationSD = false;
 
 
 void finalizaAbate(){
+  
+  bitWrite(saida1, 3, true); // chama saida luz indicaçao evisceraçao
+updateShiftRegister(); 
+warningLightBool = true; // habilita luz de indicaçao na evisceraçao
+warningLightTime = millis();// zera timer lus indicaçao
+
     tempoDePausa = "Não houve Parada";
     functionExecuted = false; 
     resumedCounting = false; 
