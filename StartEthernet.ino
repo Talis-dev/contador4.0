@@ -1,5 +1,4 @@
 
-extern int ehternet_conected = 0;
 
 void WizReset() {
 
@@ -78,13 +77,13 @@ void testaEthernet(){
         prt_hwval(Ethernet.hardwareStatus());
         dbSerial.print("   Cable Status: ");
         prt_ethval(Ethernet.linkStatus());
-        ehternet_conected = 0;
+        
        // while (true) {
           delay(100);          // Halt.
       // }
     } else {
         dbSerial.println(" Ethernet OK");
-        ehternet_conected = 1;
+       
 
   // delay(100);
 

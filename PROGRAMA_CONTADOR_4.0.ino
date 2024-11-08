@@ -24,7 +24,7 @@
 #include <24LC256.h>
 #include <SPI.h>
 #include  "Nextion.h"   //biblioteca Nextion
-//#include <WiFi.h>
+#include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 const char* mqtt_server ="192.168.3.200";
@@ -71,7 +71,16 @@ IPAddress gateway(192, 168, 3, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 EthernetClient ethClient;
-PubSubClient client(ethClient);
+//PubSubClient client(ethClient);
+
+
+bool ehternet_disable = true; 
+
+const char* ssid = "PENDURA";  
+const char* password =  "frango9800";
+WiFiClient espClient;
+PubSubClient client(espClient);
+
 
 extern int Timex[6] = {0};
 
@@ -275,6 +284,8 @@ void conectMQTT(){
   client.setBufferSize(4024);
 }
 
+
+
 void setup() {
   Serial.begin(115200);   
   Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);  // Para comunicação com a IHM Nextion
@@ -307,7 +318,8 @@ nexattachPops();
   dbSerial.println("CARREGANDO IHM...");
   delay(100); // aguarde equanto a ihm inicializa
 
-    //Inicializar HSPI para W5500
+ if(!ehternet_disable){ 
+  //Inicializar HSPI para W5500
  // hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_CS);
   SPI.begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_CS);
   dbSerialPrintln("hspi iniciada");
@@ -320,15 +332,28 @@ nexattachPops();
     dbSerial.print("Endereço IP: ");
     dbSerial.println(Ethernet.localIP());
  
- // testaEthernet();
+ }else{
+  PubSubClient client(espClient);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  dbSerial.print("Connecting to WiFi..");
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(100);
+        dbSerial.print(".");
+    }
+dbSerial.println("IP address: ");
+dbSerial.println(WiFi.localIP());
+  
+ }
+
+  delay(150);
+
   conectMQTT();
   reconnect();
   dbSerial.printf("Free Heap: %d\n", ESP.getFreeHeap());
 
- delay(150);
 
-
- delay(300);
+delay(300);
 dbSerial.print("client status = ");
 dbSerial.println(client.state());
 
@@ -420,6 +445,7 @@ StaticJsonDocument<256> doc;
 DeserializationError error = deserializeJson(doc, PayLoad);
   if (error) {
     dbSerial.print("Erro ao analisar JSON: date");
+    client.publish("contadorSat", "Erro ao analisar JSON: date!");
     return;
   }
   diavar = doc["dia"];
@@ -432,6 +458,43 @@ DeserializationError error = deserializeJson(doc, PayLoad);
   rtc.adjust(DateTime(anovar,mesvar,diavar,horavar,minutvar,segunvar)); // sethra rtc ano/mes/dia  /hora/minuto/segundo
   satInitialized = true;
   }
+
+
+if ( strcmp(topic,"server_restore")==0){
+StaticJsonDocument<1360> doc;
+DeserializationError error = deserializeJson(doc, PayLoad);
+  if (error) {
+    dbSerial.print("Erro ao analisar JSON: date");
+    client.publish("contadorSat", "Erro ao analisar JSON: date!");
+    return;
+  }
+for (int i = 0; i < 20; i++) {
+  String key = "CA" + String(i + 1);
+  Carreta_Abatida[i] = doc[key];
+}
+
+for (int i = 0; i < 20; i++) {
+  String key = "CD" + String(i + 1);
+  Carreta_Descarte[i] = doc[key];
+}
+  }
+
+if ( strcmp(topic,"server_restore_current")==0){
+StaticJsonDocument<350> doc;
+DeserializationError error = deserializeJson(doc, PayLoad);
+  if (error) {
+    dbSerial.print("Erro ao analisar JSON: date");
+    client.publish("contadorSat", "Erro ao analisar JSON: date!");
+    return;
+  }
+
+CarretaPosition = doc["CarretaPosition"];
+Carreta_Abatida[CarretaPosition] = doc["Carreta_Abatida"];
+CarretaTotalAbatida = doc["CarretaTotalAbatida"];
+Carreta_Descarte[CarretaPosition] = doc["Carreta_Descarte"];
+CarretaTotalDescarte  = doc["CarretaTotalDescarte"];
+
+ }
 
 
 if (strcmp(topic,"request/currentDataBasic")==0){

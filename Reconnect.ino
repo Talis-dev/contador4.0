@@ -15,8 +15,8 @@ void reconnect() {
      
       dbSerial.print("Conectando ao broker MQTT...");
       
-          String status = "Conectando ao broker MQTT.eth: ";
-          status += Ethernet.linkStatus();
+          String status = "Conectando ao broker... x";
+          status += reboot;
           showNotification(status.c_str(),2);
       
       // Tenta se conectar ao broker MQTT

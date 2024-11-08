@@ -7,7 +7,10 @@ extern bool ContadorON,InputPCF[],IntervaloButton,sdCardWriteSuccessful, notific
 extern int telaAtiva;
 
 int countToSwap = 0,quntidade_pausa = 1;
-unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0,
+
+bool light= false;
+
+unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0,timeLast =0,
  lastCountTimeStopped = 0, warningLightTime = 0,
  currentTimeMessageSD = 0;
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false,warningLightBool = false;
@@ -132,10 +135,9 @@ postDataServer();
 SwapActivate = false;
 countToSwap = 0;
 
-bitWrite(saida1, 3, true); // chama saida luz indicaçao evisceraçao
-updateShiftRegister(); 
 warningLightBool = true; // habilita luz de indicaçao na evisceraçao
 warningLightTime = millis();// zera timer lus indicaçao
+
 
     bitWrite(saida1, 2, false);  // Atualiza o shift register
     updateShiftRegister(); 
@@ -173,6 +175,24 @@ if(CarretaPosition <= 20){
     updateShiftRegister();
  }
 
+if(warningLightBool){
+unsigned int currentTimeL = millis();
+
+if(currentTimeL - timeLast >= 1500){
+  light = !light;
+  timeLast = currentTimeL;
+
+  if(light){
+    bitWrite(saida1, 3, true); // chama saida luz indicaçao evisceraçao
+    updateShiftRegister();
+  }else{
+    bitWrite(saida1, 3, false); // chama saida luz indicaçao evisceraçao
+    updateShiftRegister();
+  }
+}
+
+
+}
 
 } // end function
 
@@ -257,9 +277,7 @@ notificationSD = false;
 
 
 void finalizaAbate(){
-  
-  bitWrite(saida1, 3, true); // chama saida luz indicaçao evisceraçao
-updateShiftRegister(); 
+
 warningLightBool = true; // habilita luz de indicaçao na evisceraçao
 warningLightTime = millis();// zera timer lus indicaçao
 
