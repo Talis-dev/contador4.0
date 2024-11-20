@@ -174,7 +174,7 @@ void z3call(void *ptr) {//bt zera tudo
 CarretaTotalAbatida = 0;
 CarretaTotalDescarte = 0;
 CarretaPosition = 1;
-for (int i = 0; i < 18; i++) {
+for (int i = 0; i < 21; i++) {
         Carreta_Abatida[i] = 0;
         Carreta_Descarte[i] = 0;
     }

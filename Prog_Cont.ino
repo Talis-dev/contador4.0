@@ -16,7 +16,7 @@ unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPul
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false,warningLightBool = false;
 unsigned int pulseCount = 0;
 extern int pulsesPerMinute = 0,pulsesPerHour = 0;
-
+unsigned long debounceTime = 0;
 
 #define NUM_PULSOS 10
 unsigned long pulseDurations[NUM_PULSOS] = {0}; // Armazena os últimos 10 pulsos
@@ -59,9 +59,10 @@ medirVelocidade();
 SwapTrailer();
 setStoppedTime();
 notificationSdCardAfterChange();
- }else{ // contador habilitado
-
- noreaRun = false; // norea parada}
+// contador habilitado
+ }else{ 
+  // contador desabilitado
+ noreaRun = false; // norea parada }
   }
 }
 
@@ -69,7 +70,7 @@ notificationSdCardAfterChange();
 void medirVelocidade() {
    static float avgPulseDuration = 0;
     unsigned long currentTime = micros();
-    unsigned long debounceTime = (avgPulseDuration > 2000000) ? 200000 : 100000; // Debounce ajustável
+     debounceTime = (avgPulseDuration > 2000000) ? 200000 : 100000; // Debounce ajustável
 
     if (InputPCF[6] && (currentTime - lastDebounceTime) > debounceTime) {
         lastDebounceTime = currentTime;
@@ -77,17 +78,11 @@ void medirVelocidade() {
         unsigned long pulseDuration = currentTime - lastPulseTime;
         lastPulseTime = currentTime;
 
-        // Ignora pulsos anômalos
-        if (leituraEstavel && (pulseDuration < (avgPulseDuration * 0.5))) {
-            return;
-        }
-
         pulseDurations[pulseIndex] = pulseDuration;
-        pulseIndex = (pulseIndex + 1) % NUM_PULSOS;
+        pulseIndex = (pulseIndex + 1) % NUM_PULSOS;   
 
-        if (pulseIndex == 0) leituraEstavel = true;
 
-        if (leituraEstavel) {
+        if (pulseIndex == 0) {
             unsigned long totalDuration = 0;
             for (int i = 0; i < NUM_PULSOS; i++) {
                 totalDuration += pulseDurations[i];
@@ -96,6 +91,7 @@ void medirVelocidade() {
 
             pulsesPerMinute = (60000000.0 / avgPulseDuration);
             pulsesPerHour = pulsesPerMinute * 60;
+            }
 
             if (pulsesPerMinute > 360) { // Caso o sensor fique acionado direto // Limite máximo de segurança
                 noreaRun = false;
@@ -104,7 +100,7 @@ void medirVelocidade() {
             } else {
                 noreaRun = true;
             }
-        }
+        
     }
     
     // Se não houver pulsos por mais de 2 segundos

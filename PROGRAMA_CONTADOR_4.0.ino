@@ -468,13 +468,13 @@ DeserializationError error = deserializeJson(doc, PayLoad);
     client.publish("contadorSat", "Erro ao analisar JSON: date!");
     return;
   }
-for (int i = 0; i < 20; i++) {
-  String key = "CA" + String(i + 1);
+for (int i = 1; i < 20; i++) {
+  String key = "CA" + String(i);
   Carreta_Abatida[i] = doc[key];
 }
 
-for (int i = 0; i < 20; i++) {
-  String key = "CD" + String(i + 1);
+for (int i = 1; i < 20; i++) {
+  String key = "CD" + String(i);
   Carreta_Descarte[i] = doc[key];
 }
   }
