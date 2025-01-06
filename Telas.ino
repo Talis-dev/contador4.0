@@ -1,15 +1,20 @@
 extern uint32_t atualizaVar,timeStopDescart;
 extern uint32_t imagem1,imagem2,imagem3,imagem4,imagem5,imagem6;
-int Ant1=0,Ant2=0,Ant3=0,Ant4=0,Ant5=0,Ant6=0;
 extern uint32_t botaoHRvar,diavar,mesvar,anovar,horavar,minutvar,segunvar;
-extern int BitPcf,timeOffDescart;
-int sethra[5] = {0};
-extern int  soma = 0, telaAtiva = 0;
-extern int BAR;
-extern bool InputPCF[7] = {false}, mensageActive = 1, connected = false;
-bool SinglePageLoad = false, notify = false;
-char time_buf[30] = {0};
+extern int BitPcf,timeOffDescart,soma,telaAtiva,BAR;
 extern String DateAndHora_Str,DataToFile;
+
+int Ant1=0,Ant2=0,Ant3=0,Ant4=0,Ant5=0,Ant6=0;
+int sethra[6] = {0};
+int soma = 0, telaAtiva = 0;
+
+extern bool InputPCF[8], mensageActive, connected;
+bool InputPCF[8] = {false};
+bool  mensageActive = 1, connected = false;
+
+bool SinglePageLoad = false, notify = false;
+char time_buf[32] = {0};
+
 int Tempo_anterior = 0, soma2 = 0;
 int long dlyihm = 0, tempo_espera = 0,tempo_espera2 = 0, dlay = 0, dlay4 = 0;
 unsigned long currentTimeMessage = 0, currentTimeHorToTxt = 0;
@@ -40,7 +45,7 @@ if(millis() - dlay4 > 1000){ // faz a conversão a cada 1 seg
 dlay4 = millis();
 
 
-time_buf[30] = {0};
+time_buf[31] = {0};
 snprintf(time_buf, sizeof(time_buf), "%02d de %s de %02d - %02d:%02d:%02d", 
          Timex[0],                      // Dia
          meses[Timex[1]],               // Mês (nome do mês em texto)

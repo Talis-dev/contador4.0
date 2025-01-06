@@ -25,14 +25,24 @@
 #include <SPI.h>
 #include  "Nextion.h"   //biblioteca Nextion
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-const char* mqtt_server ="192.168.3.200";
+#include <Preferences.h> // Biblioteca para NVS
 
-extern PCF8574 PCF(0x3D); // enderesso modulos saidas i2c
+Preferences preferences;
 
-extern int RL[17] = {0}, BitPcf = 0;
- 
+char* mqtt_server ="192.168.3.200";
+
+uint32_t mqtt_port = 1883;
+char mqtt_ip_text[16];
+IPAddress mqtt_ip;
+extern uint32_t mqtt_port;
+extern IPAddress mqtt_ip;
+
+ PCF8574 PCF(0x3D); // enderesso modulos saidas i2c
+int RL[17] = {0}, BitPcf = 0;
+extern int RL[17], BitPcf;
 
 #define latchPin 26 // st cp  reset
 #define clockPin 27 // sh cp  srclk
@@ -43,13 +53,11 @@ byte saida1 = 0x00;
 E24LC256 MyEEPROM(0x50); //define o endereço base da EEPROM 
 #define WP_EEPROM 5  // wirte pin eeprom
 
-// iniciou se aa mundança aki
-int PinCorrente = 0;
 
-#define ANALOG_PIN_1 4
 #include <Wire.h>
 #include "RTClib.h"
 RTC_DS1307 rtc;
+bool rtcConected = false;
 //extern char DiasDaSemana[7][20] = {"Domingo", "Segunda-Feira", "Terca-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sabado"}; // array 7 caracteres de valor 12 caracteres
 //extern char semanaN[1] = {0}; // numero da semana atual setada pelo rtc ds1307
 
@@ -66,7 +74,7 @@ RTC_DS1307 rtc;
 
 byte mac[] = { 0x02, 0xAD, 0xBE, 0x0D, 0xFE, 0xED };
 IPAddress ip(192, 168, 3, 30);
-IPAddress myDns(192, 168, 1, 1);
+IPAddress myDns(192, 168, 3, 1);
 IPAddress gateway(192, 168, 3, 1);
 IPAddress subnet(255, 255, 255, 0);
 
@@ -75,14 +83,16 @@ EthernetClient ethClient;
 
 
 bool ehternet_disable = true; 
+char ipAddress[16];
+char ssid[32];
 
-const char* ssid = "PENDURA";  
-const char* password =  "frango9800";
+extern char ssid[32],ipAddress[16];
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-
-extern int Timex[6] = {0};
+int Timex[6] = {0};
+extern int Timex[6];
 
 
 float tensaoEntrada = 0.0; //VARIÁVEL PARA ARMAZENAR O VALOR DE TENSÃO DE ENTRADA DO SENSOR
@@ -92,10 +102,15 @@ float valorR2 = 7500.0; // VALOR DO RESISTOR 2 DO DIVISOR DE TENSÃO
 float tensaoMedia = 0.0, ResultMedia = 0.0;
 float bufferMedia[6] = {0.0};
 int bufferVR = 0;
-extern char voltC[5] = {0};
-extern bool sdCardFault = false,noreaDescartPower = false;
-extern int timeOffDescart = 0;
-extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte;
+
+char voltC[5] = {0};
+extern char voltC[5];
+
+extern bool sdCardFault,noreaDescartPower;
+bool sdCardFault = false,noreaDescartPower = false;
+
+int timeOffDescart = 0;
+extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte,timeOffDescart;
 extern uint32_t Carreta_Abatida[], Carreta_Descarte[];
 bool satInitialized = false; // variavel para atualizar data e hra apenas na inicializaçao
 
@@ -113,7 +128,8 @@ NexNumber C2 = NexNumber(0, 22, "C2");
 NexNumber C3 = NexNumber(0, 18, "C3");
 NexNumber C4 = NexNumber(0, 20, "C4");
 
-extern uint32_t varC0 = 0,varC1 = 0,varC2 = 0,varC3 = 0,varC4 = 0;
+extern uint32_t varC0,varC1,varC2,varC3,varC4;
+uint32_t varC0 = 0,varC1 = 0,varC2 = 0,varC3 = 0,varC4 = 0;
 
 NexButton b0 = NexButton(0, 3, "b0"); // bt chama pagina carretas
 NexButton b1 = NexButton(0, 26, "b1"); // bt chama pagina menu
@@ -123,9 +139,11 @@ NexDSButton bt0   = NexDSButton(0, 10, "bt0"); // habilita descarte
 NexDSButton bt1   = NexDSButton(0, 11, "bt1"); // habilita contador
 
 
-extern uint32_t bt0var = 0,bt1var = 0;
+extern uint32_t bt0var,bt1var;
+uint32_t bt0var = 0,bt1var = 0;
 
-extern uint32_t imagem1=1,imagem2=1,imagem3=1,imagem4=1,imagem5=2,imagem6=5;
+extern uint32_t imagem1,imagem2,imagem3,imagem4,imagem5,imagem6;
+uint32_t imagem1=1,imagem2=1,imagem3=1,imagem4=1,imagem5=2,imagem6=5;
 
 NexPicture p0 = NexPicture(0, 5, "p0"); // img 01
 NexPicture p1 = NexPicture(0, 31, "p1"); // img 02
@@ -141,7 +159,8 @@ uint32_t tempoAtt;
 int PageCarretas = 1;
 
 NexDSButton atualiza   = NexDSButton(PageCarretas, 31, "atualiza");
-extern uint32_t atualizaVar = 0;
+extern uint32_t atualizaVar;
+uint32_t atualizaVar = 0;
 NexButton vt1 = NexButton(PageCarretas,29, "vt1");
 NexButton mt = NexButton(PageCarretas,40, "mt"); // chama page mortalidade
 
@@ -170,7 +189,7 @@ NexVariable va0 = NexVariable(PageCarretas, 23, "va0"); // variavel de retorno
 
 int PageMortalidade = 3;
 NexButton vt4   = NexButton(PageMortalidade, 29, "vt4"); // botao voltar
-NexButton rs   = NexButton(PageMortalidade, 46, "rs"); // botao reenviar dados da ultima carreta
+NexButton ed   = NexButton(PageMortalidade, 46, "ed"); // botao editar dados da carreta
 
 NexNumber n17 = NexNumber(PageMortalidade, 2, "n0");
 NexNumber n18 = NexNumber(PageMortalidade, 4, "n1");
@@ -209,8 +228,11 @@ NexNumber hora = NexNumber(pageHora, 10, "hora");
 NexNumber minut = NexNumber(pageHora, 11, "minut");
 NexNumber segun = NexNumber(pageHora, 12, "segun");
 
-extern uint32_t botaoHRvar = 0;
-extern uint32_t diavar = 0, mesvar = 0, anovar = 0, horavar = 0, minutvar = 0, segunvar = 0;
+extern uint32_t botaoHRvar;
+uint32_t botaoHRvar = 0;
+
+extern uint32_t diavar, mesvar, anovar, horavar, minutvar, segunvar;
+uint32_t diavar = 0, mesvar = 0, anovar = 0, horavar = 0, minutvar = 0, segunvar = 0;
 bool carregaeeprom = 0;
 int horaAnterior = 0;
 
@@ -240,6 +262,7 @@ NexText txtcf = NexText(pageConfig, 1, "txtcf"); // titulo
 
 NexButton vt5 = NexButton(pageConfig,2, "vt5");
 NexButton cfs = NexButton(pageConfig,7, "cfs");
+NexButton rd = NexButton(pageConfig,20, "rd"); // botao page rede
 
 NexNumber cf1 = NexNumber(pageConfig, 3, "cf1");
 NexNumber cf2 = NexNumber(pageConfig, 5, "cf2");
@@ -252,6 +275,43 @@ NexNumber cf8 = NexNumber(pageConfig, 18, "cf8");
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------//
+
+//----------------------------------------------------ENDEREÇO NEXTION IHM page 7 editar --------------------------------------------------//
+
+int pageEdit = 7;
+NexText txted = NexText(pageEdit, 1, "txted"); // titulo
+
+NexButton vt6 = NexButton(pageEdit,2, "vt6"); // botao voltar
+NexButton ps = NexButton(pageEdit,5, "ps"); // botao pesquisar
+NexButton env = NexButton(pageEdit,10, "env"); // botao enviar
+
+NexNumber edn = NexNumber(pageEdit, 3, "edn");
+NexNumber ab = NexNumber(pageEdit, 8, "ab");
+NexNumber ad = NexNumber(pageEdit, 9, "ad");
+
+//-----------------------------------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------ENDEREÇO NEXTION IHM page 9 rede --------------------------------------------------//
+int pageRede = 9;
+NexButton vt7 = NexButton(pageRede,2, "vt7"); // botao voltar
+NexButton evp = NexButton(pageRede,20, "evp"); // botao enviar parametros
+NexButton eth = NexButton(pageRede,7, "eth"); // botao alterna wifi/ethernet
+NexButton wfm = NexButton(pageRede,19, "wfm"); // botao inicializa wifi maneger
+
+NexText t0 = NexText(pageRede, 1, "t0"); // txt titulo page
+
+NexText ipmq = NexText(pageRede, 4, "ipmq"); // txt IP mqtt
+NexNumber ptmq = NexNumber(pageRede, 6, "ptmq"); // number Porta mqtt
+
+NexText sid = NexText(pageRede, 18, "sid"); // txt IP ssid wifi
+NexText ipct = NexText(pageRede, 15, "ipct"); // txt IP wifi/ethernet
+
+NexText ipet = NexText(pageRede, 9, "ipet"); // txt IP ethernet
+NexText sbet = NexText(pageRede, 11, "sbet"); // txt IP subnet
+NexText gtet = NexText(pageRede, 13, "gtet"); // txt IP gateway
+//-----------------------------------------------------------------------------------------------------------------------------------//
+
 
 unsigned long cloock = 0, clk1 = 0, Tboucing = 0, Tvarre = 0; 
 unsigned long currentTimeSendServer = 0;   
@@ -267,19 +327,20 @@ NexTouch *nex_listen_list[] =
 &bt0,&bt1,&hor,//page 0 home
 &vt2, &botaoHR,// page 5 hora
 &vt3,&cf,&z0,&z1,&z2,&z3,&z4,&z5,&z6, //page 4 menu
-&vt4,&rs, //page 3 mortalidade
-&vt5,&cfs, //page 6 config
+&vt4,&ed, //page 3 mortalidade
+&vt5,&cfs,&rd, //page 6 config
+&vt6,&ps,&env, //page 7 editar
+&vt7,&eth,&evp,&wfm,//page 9 rede
     NULL
 };
 
 #define RXD2 16  // Pino RX para Serial2 (ajuste conforme necessário)
 #define TXD2 17  // Pino TX para Serial2 (ajuste conforme necessário)
-
-
+#define LED_BUILTIN 2
+#define ANALOG_PIN_1 4 //sensor de tensao
 
 void conectMQTT(){
- // client.setClient(ethClient);
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_ip, mqtt_port);
   client.setCallback(callback);
   client.setBufferSize(4024);
 }
@@ -292,13 +353,17 @@ void setup() {
   dbSerialBegin(115200); // Para monitoramento no PC
   dbSerialPrintln("serial iniciada");
 
-  if (! rtc.begin()) { 
-     dbSerial.println("falha no RTC");
-  }dbSerial.println(" RTC carregado com sucesso");
+  if ( rtc.begin()) { 
+    rtcConected = true;
+     dbSerial.println(" RTC carregado com sucesso");
+  }else{
+    dbSerial.println("falha no RTC");
+  }
 // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
 delay(30);
-
+pinMode(ANALOG_PIN_1, INPUT);
+pinMode(LED_BUILTIN, OUTPUT);
 pinMode(WP_EEPROM, OUTPUT);
 digitalWrite(WP_EEPROM,HIGH); 
 MyEEPROM.init();
@@ -327,30 +392,60 @@ nexattachPops();
    Ethernet.init(HSPI_CS);  // Define o pino CS
    WizReset();
   
-    Ethernet.begin(mac, ip);
+    Ethernet.begin(mac, ip, myDns, gateway, subnet);
     dbSerial.println("Ethernet W5500 inicializado");
-    dbSerial.print("Endereço IP: ");
-    dbSerial.println(Ethernet.localIP());
- 
+    if (Ethernet.hardwareStatus() == EthernetNoHardware || Ethernet.linkStatus() == LinkOFF) {
+       dbSerial.println("Falha na inicialização do Ethernet. Tentando Wi-Fi...");
+       ehternet_disable = false;
+       }else{
+        dbSerial.println("Ethernet W5500 conectado");
+        IPAddress ip = Ethernet.localIP();
+        snprintf(ipAddress, sizeof(ipAddress), "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]); 
+        dbSerial.print("Endereço IP: ");
+        dbSerial.println(ipAddress); 
+        PubSubClient client(ethClient);
+       }
+    
  }else{
   PubSubClient client(espClient);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  dbSerial.print("Connecting to WiFi..");
-      while (WiFi.status() != WL_CONNECTED) {
-        delay(100);
-        dbSerial.print(".");
+    WiFiManager wifiManager;
+    wifiManager.setConfigPortalTimeout(240);
+    if (!wifiManager.autoConnect("CONTADOR_V4", "contadorv4")) {
+      dbSerial.println(F("Falha na conexão. Resetar e tentar novamente..."));
+      delay(500);
+      ESP.restart();
     }
-dbSerial.println("IP address: ");
-dbSerial.println(WiFi.localIP());
   
+ strncpy(ssid, WiFi.SSID().c_str(), sizeof(ssid)); 
+ dbSerial.print("SSID: ");
+ dbSerial.println(ssid);
+
+ IPAddress ip = WiFi.localIP();
+ snprintf(ipAddress, sizeof(ipAddress), "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]); 
+ dbSerial.print("Endereço IP: ");
+ dbSerial.println(ipAddress); 
  }
 
   delay(150);
 
+// Inicializar NVS 
+preferences.begin("mqtt", false);
+
+// Recuperar o endereço IP salvo 
+String saved_ip = preferences.getString("mqtt_ip", "0.0.0.0");
+ strncpy(mqtt_ip_text, saved_ip.c_str(), sizeof(mqtt_ip_text)); 
+ mqtt_ip = parseIPAddress(mqtt_ip_text);
+
+ mqtt_port = preferences.getUInt("mqtt_port", 1883);
+
+ dbSerial.print("Endereço IP server MQTT: ");
+ dbSerial.print(mqtt_ip); 
+ dbSerial.print(" Porta: ");
+ dbSerial.println(mqtt_port); 
+
   conectMQTT();
   reconnect();
-  dbSerial.printf("Free Heap: %d\n", ESP.getFreeHeap());
+  dbSerial.printf("Free Heap: %lu\n", ESP.getFreeHeap());
 
 
 delay(300);
@@ -386,9 +481,13 @@ InputsBitPCF();// verifica as entradas
 notifyAndHorTxt();
 
 if (millis() - cloock > 1000){
-
-if(telaAtiva == 0){calculos(); }
 cloock = millis();
+
+if(telaAtiva == 0){
+  bateria();
+  calculos();
+   }
+
 
 if(noreaDescartPower){
 timeOffDescart ++;
@@ -426,7 +525,7 @@ extern bool server_response;
  dbSerial.print(topic);
  dbSerial.print("] ");
  String PayLoad;
- int resultado=0;
+ 
 
   for (int i = 0; i < length; i++) {
    //Serial.print((char)payload[i]);
@@ -441,7 +540,7 @@ if (strcmp(topic,"server_response")==0){
 
 
 if (!satInitialized && strcmp(topic,"server_return_date")==0){
-StaticJsonDocument<256> doc;
+ StaticJsonDocument<256> doc;
 DeserializationError error = deserializeJson(doc, PayLoad);
   if (error) {
     dbSerial.print("Erro ao analisar JSON: date");
@@ -459,9 +558,25 @@ DeserializationError error = deserializeJson(doc, PayLoad);
   satInitialized = true;
   }
 
+if (strcmp(topic,"request/dataEdit")==0){
+ StaticJsonDocument<256> doc;
+DeserializationError error = deserializeJson(doc, PayLoad);
+  if (error) {
+    dbSerial.print("Erro ao analisar JSON: date");
+    client.publish("contadorSat", "Erro ao analisar JSON: date!");
+    return;
+  }
+  if(PayLoad == "false"){
+    txted.setText("Dados da Carreta Nao encontrado!");
+    dbSerialPrintln("Dados Carreta Nao encontrado!");
+  }
+ ab.setValue(doc["AvesAbatida"]);
+ ad.setValue(doc["AvesDescarte"]);
+  }
+
 
 if ( strcmp(topic,"server_restore")==0){
-StaticJsonDocument<1360> doc;
+ StaticJsonDocument<1360> doc;
 DeserializationError error = deserializeJson(doc, PayLoad);
   if (error) {
     dbSerial.print("Erro ao analisar JSON: date");
@@ -480,7 +595,7 @@ for (int i = 1; i < 20; i++) {
   }
 
 if ( strcmp(topic,"server_restore_current")==0){
-StaticJsonDocument<350> doc;
+ StaticJsonDocument<256> doc;
 DeserializationError error = deserializeJson(doc, PayLoad);
   if (error) {
     dbSerial.print("Erro ao analisar JSON: date");
@@ -498,7 +613,7 @@ CarretaTotalDescarte  = doc["CarretaTotalDescarte"];
 
 
 if (strcmp(topic,"request/currentDataBasic")==0){
-  StaticJsonDocument<350> doc;
+  StaticJsonDocument<256> doc;
   doc["CarretaPosition"] = CarretaPosition;
   doc["Carreta_Abatida"] = Carreta_Abatida[CarretaPosition];
   doc["CarretaTotalAbatida"] = CarretaTotalAbatida;
@@ -512,7 +627,7 @@ if (strcmp(topic,"request/currentDataBasic")==0){
 
 
 if (strcmp(topic, "request/currentData") == 0) {
-  StaticJsonDocument<2560> doc;
+   StaticJsonDocument<2560> doc;
   bool dataInsert = false; 
 
   for (int i = 1; i <= 20; i++) {
@@ -545,20 +660,21 @@ if (strcmp(topic, "request/currentData") == 0) {
 } // end void callback
 
 void calculos(){
-
-DateTime now = rtc.now();
-Timex[0] = now.day(), DEC;
-Timex[1] = now.month(), DEC;
-Timex[2] = now.year(), DEC;
-Timex[3] = now.hour(), DEC;
-Timex[4] = now.minute(), DEC;
-Timex[5] = now.second(), DEC;
-
-bateria();
+if(rtcConected){
+ DateTime now = rtc.now();
+Timex[0] = now.day();
+Timex[1] = now.month();
+Timex[2] = now.year();
+Timex[3] = now.hour();
+Timex[4] = now.minute();
+Timex[5] = now.second(); 
+}
 }//end calculos
 
-
 void bateria() {
+  int valorADC = analogRead(ANALOG_PIN_1);
+dbSerial.print("Valor ADC lido: ");
+dbSerial.println(valorADC);
     // Calcular a tensão de entrada
     float tensaoEntrada = analogRead(ANALOG_PIN_1) * 3.3 / 3750.0;
     dbSerial.print("Tensao Entrada: ");
@@ -569,29 +685,33 @@ void bateria() {
     float tensaoMedida = tensaoEntrada / divisor;
     dbSerial.print("   Tensao Calculada: ");
     dbSerial.print(tensaoMedida);
-   // dbSerial.print("   Tensao Media: ");
-   // dbSerial.println(tensaoMedia);
-       
-       
-    bufferVR++;
 
     // Armazenar valor no buffer e calcular média a cada 6 leituras
-    if (bufferVR <= 6) {
-       // bufferMedia[bufferVR] = tensaoMedida;
-    } else {  dtostrf(tensaoMedida, 4, 2, voltC); bufferVR = 0;}
+    static float bufferMedia[6] = {0.0};
+    static int bufferIndex = 0;
+    static float somaMedia = 0.0;
 
-     /*   float soma = 0.0;
-        for (int i = 0; i < 6; ++i) {
-            soma += bufferMedia[i];
-        }
-        tensaoMedia = soma / 6.0;
-        bufferVR = 0;
+    // Subtrair o valor mais antigo da soma
+    somaMedia -= bufferMedia[bufferIndex];
+    
+    // Armazenar o novo valor no buffer
+    bufferMedia[bufferIndex] = tensaoMedida;
+    
+    // Adicionar o novo valor à soma
+    somaMedia += bufferMedia[bufferIndex];
+    
+    // Avançar o índice do buffer
+    bufferIndex = (bufferIndex + 1) % 6;
 
-        // Convertendo float para char diretamente
-        dtostrf(tensaoMedia, 4, 2, voltC);
-    }*/
+    // Calcular a média móvel
+    float tensaoMedia = somaMedia / 6.0;
+
+    // Convertendo float para char diretamente
+    dtostrf(tensaoMedia, 4, 2, voltC);
+
+    dbSerial.print("   Tensao Media: ");
+    dbSerial.println(tensaoMedia);
 }
-
 
 void updateShiftRegister()
 {  digitalWrite(latchPin, LOW);

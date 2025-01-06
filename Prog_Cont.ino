@@ -1,22 +1,26 @@
 extern uint32_t hooksToRestartCount; //ganchos
- extern String horaInicio, tempoDePausa;
+extern String horaInicio, tempoDePausa;
 
-extern int CarretaPosition = 1,CarretaTotalAbatida = 0;
-extern uint32_t Carreta_Abatida[21]={0}, Carreta_Descarte[21]={0};
-extern bool ContadorON,InputPCF[],IntervaloButton,sdCardWriteSuccessful, notificationSD = false, noreaRun = false;
-extern int telaAtiva;
+int CarretaPosition = 1,CarretaTotalAbatida = 0;
+extern int telaAtiva,CarretaPosition ,CarretaTotalAbatida;
 
-int countToSwap = 0,quntidade_pausa = 1;
+extern uint32_t Carreta_Abatida[21], Carreta_Descarte[21];
+uint32_t Carreta_Abatida[21]={0}, Carreta_Descarte[21]={0};
+
+extern bool ContadorON,InputPCF[],IntervaloButton,sdCardWriteSuccessful,
+notificationSD, noreaRun;
+
+bool notificationSD = false, noreaRun = false;
+
+extern int pulsesPerMinute,pulsesPerHour,countToSwap,quntidade_pausa;
+int pulsesPerMinute = 0,pulsesPerHour = 0,countToSwap = 0,quntidade_pausa = 1;
 
 bool light= false;
 
 unsigned long currentTimeSwap = 0, TimeBauncing = 0,lastDebounceTime = 0,lastPulseTime = 0,timeLast =0,
- lastCountTimeStopped = 0, warningLightTime = 0,
- currentTimeMessageSD = 0;
+ lastCountTimeStopped = 0, warningLightTime = 0, currentTimeMessageSD = 0;
 bool SwapActivate = false,functionExecuted = false,resumedCounting = false,warningLightBool = false;
-unsigned int pulseCount = 0;
-extern int pulsesPerMinute = 0,pulsesPerHour = 0;
-unsigned long debounceTime = 0;
+unsigned long debounceTime = 0,pulseCount = 0;
 
 #define NUM_PULSOS 10
 unsigned long pulseDurations[NUM_PULSOS] = {0}; // Armazena os últimos 10 pulsos

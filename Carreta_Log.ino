@@ -1,6 +1,11 @@
-extern String DateAndHora_Str = "",horaInicio = "",tempoDePausa = "Não houve Parada";
-extern bool sdCardFault;
-extern bool sdCardWriteSuccessful = false, server_response = false, ReesendActive = false;
+extern String DateAndHora_Str,horaInicio,tempoDePausa;
+extern bool sdCardWriteSuccessful, server_response, ReesendActive,sdCardFault;
+
+String DateAndHora_Str = "",horaInicio = "",tempoDePausa = "Não houve Parada";
+
+bool sdCardWriteSuccessful = false,server_response = false,ReesendActive = false;
+
+
 
 String quarantineData = "";
 unsigned long timeReesend = 1;
@@ -25,7 +30,7 @@ carreta_position += CarretaPosition;
 String avesAbatida = String(Carreta_Abatida[CarretaPosition]);
 String avesDescarte = String(Carreta_Descarte[CarretaPosition]);
  
-  StaticJsonDocument<2560> jsonDoc;
+StaticJsonDocument<2560> jsonDoc;
 
   // Adicionar dados ao JSON
   jsonDoc["Carreta"] = CarretaPosition;
@@ -114,12 +119,37 @@ void ReesendDate(){
   contReesend = 0; //finaliza funcao
   ReesendActive = false;
   sdCardWriteSuccessful = true;
-  rs.setText("Enviado com Sucesso!\rSTA reponse: ACK");
+  
 
  }else{
   client.publish("customer_response","ACK"); // envia um sinal de status para testar a conexao
    showNotification("Falha ao reenviar. tente novamente",1);
     dbSerial.println("ERROR SERVIDOR SEM SINAL.");
  }
+
+}
+
+
+bool editDataCarreta(int abat,int descart,int carr){
+
+StaticJsonDocument<256> doc;
+
+  doc["AvesAbatida"] = abat;
+  doc["AvesDescarte"] = descart;
+  doc["carreta"] = carr;
+  String jsonStr;
+  serializeJson(doc, jsonStr);
+
+ if (client.publish("topic/carretaDataEdit", jsonStr.c_str())) {
+  dbSerial.println("Dados enviados com sucesso!!");
+  txted.setText("Carreta Editada com Sucesso!");
+  return true;
+ }else{
+  dbSerial.println("ERRO NA GRAVAÇAO verifique a conexao!");
+  txted.setText("ERRO NA GRAVAÇAO verifique a conexao!");
+  return false;
+    } 
+
+
 
 }

@@ -26,10 +26,10 @@ digitalWrite(WP_EEPROM,HIGH);
 
  void CleanEEPROM(){
 
-   for (uint8_t i = 0; i < 256; i++) {
+  for (uint8_t i = 0; i < 255; i++) {
 digitalWrite(WP_EEPROM,LOW); 
 MyEEPROM.write(i,0);
-if(i>=255){digitalWrite(4,HIGH);}
+if(i>=254){digitalWrite(4,HIGH);}
  }
 
  }

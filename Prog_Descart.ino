@@ -6,9 +6,10 @@ imagem5; // imagem norea ligada,desligada,em espera
 
 //extern uint32_t Carreta_Abatida[], Carreta_Descarte[];
 
-extern int CarretaPosition,CarretaTotalAbatida,timeOffDescart;
+extern int CarretaPosition,CarretaTotalAbatida,timeOffDescart,telaAtiva, CarretaTotalDescarte;
 extern bool ContadorON,InputPCF[],noreaDescartPower;
-extern int telaAtiva, CarretaTotalDescarte = 0;;
+int  CarretaTotalDescarte = 0;
+
 bool previousNoreaDescartPower  = false, sensorAtivado = false; 
 
 unsigned long int currentTime = 0,currentTimeSensor= 0, ativacaoTime = 0;

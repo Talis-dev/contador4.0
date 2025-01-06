@@ -1,11 +1,12 @@
-extern uint32_t timeStopDescart = 2, // min
+extern uint32_t timeStopDescart,timeDelaySensorDescart,hooksToRestartCount,timeBauncingTrolleyPendura,notificationDuration,breakTime,warningLight;
+
+uint32_t timeStopDescart = 2, // min
 timeDelaySensorDescart = 20, // ms
 hooksToRestartCount = 15, // ganchos
 timeBauncingTrolleyPendura = 20, //
 notificationDuration = 2, // tempo de duraçao da notificçao na home page
 breakTime = 1, // tempo de norea parada para registrar horario de pausa
 warningLight = 1;// tempo de luz qando troca de carreta
-
 
 
 void writeConfig(){

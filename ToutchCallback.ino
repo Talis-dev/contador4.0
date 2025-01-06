@@ -1,17 +1,23 @@
 extern uint32_t bt0var,bt1var;
 extern int telaAtiva;
-extern bool ContadorON=false, IntervaloButton=false;
+extern bool ContadorON, IntervaloButton;
+bool ContadorON=false, IntervaloButton=false;
 
 void nexattachPops(){
-b0.attachPop(b0call, &b0); //chama tela carretas
-b1.attachPop(b1call, &b1);//chama tela menu carretas
-b2.attachPop(b2call, &b2);//bt pulso itervalo na tela0
+b0.attachPop(b0call, &b0);//bt chama tela carretas
+b1.attachPop(b1call, &b1);//bt chama tela menu carretas
+b2.attachPop(b2call, &b2);//bt chama tela ne horarios paradas
 mt.attachPop(mtcall, &mt);//bt chama tela mortalidade
+ed.attachPop(edcall, &ed);//bt chama tela editar dados da carreta
 cf.attachPop(cfcall, &cf);//bt chama tela config
+rd.attachPop(rdcall, &rd);//bt chama tela rede
+
 cfs.attachPop(cfscall, &cfs);//bt salvar configuraçoes
 
+evp.attachPop(evpcall, &evp);//bt salvar configuraçoes
+
 p5.attachPop(p5call, &p5);//imagem db on/off, cptura toque
-rs.attachPop(rscall, &rs);//bt reenviar dados da carreta anterior caso falhe
+
 
 z0.attachPop(z0call, &z0);//bt  salvar e finalizar abate
 z1.attachPop(z1call, &z1);//bt zera total page menu
@@ -22,14 +28,17 @@ z5.attachPop(z5call, &z5);//bt alterar carreta page menu
 z6.attachPop(z6call, &z6);//bt alterar carreta para abater agr page menu
 
 hor.attachPop(horcall, &hor);  //chama tela ajuste hora
+botaoHR.attachPop(botaoHRcall, &botaoHR); // botao enviar data e hora 
 
 vt1.attachPop(vt1call, &vt1); // botao voltar tela carretas
 vt2.attachPop(vt2call, &vt2); // botao voltar tela ajute hora
 vt3.attachPop(vt3call, &vt3); // botao voltar tela  menu
 vt4.attachPop(vt4call, &vt4); // botao voltar tela  carretas mortalidade
 vt5.attachPop(vt5call, &vt5); // botao voltar tela  config
+vt6.attachPop(vt6call, &vt6); // botao voltar tela  editar
 
-botaoHR.attachPop(botaoHRcall, &botaoHR); // botao enviar data e hora 
+ps.attachPop(pscall, &ps); // botao pesquisar carreta
+env.attachPop(envcall, &env); // botao enviar alteraçoes
 
 
 bt0.attachPop(bt0call, &bt0);
@@ -54,16 +63,10 @@ void b1call(void *ptr) { // botao pge 4 menu
  dbSerial.println("Tela ativa 4!");
  telaAtiva = 4; }
 
-void b2call(void *ptr) { // botao intervalo
- dbSerial.println("Botao intervalo prescionado");
- if(noreaRun ){
-   IntervaloButton = true;
-    showNotification("Aguardando PARADA para intervalo!",2);
- sendCommand("b2.bco=1024");
- }else{
-  showNotification("Error, intervalo N/ registrado, Norea PARADA!",1);
- }
- 
+void b2call(void *ptr) { // botao page horarios de parada
+ dbSerial.println("Tela ativa 8!");
+  telaAtiva = 8;
+  
   }
 
 void bt0call(void *ptr) { // bt liga desliga norea descarte
@@ -108,9 +111,9 @@ void vt4call(void *ptr) { // bt voltar na page 3 mort para page 1 carretas
  telaAtiva = 1;
  Load_Abatido();
 }
-void rscall(void *ptr) {
-  dbSerial.println("Botao reesend prescionado!");
-ReesendDate();
+void edcall(void *ptr) {
+  dbSerial.println("Tela ativa 7!");
+ telaAtiva = 7;
 }
 
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
@@ -138,7 +141,81 @@ void cfscall(void *ptr) { // bt salva config
    dbSerial.println("Salvando configurações...");
    writeConfig();
 }
+
+void rdcall(void *ptr) { // bt page rede
+   dbSerial.println("Tela ativa 9!");
+ telaAtiva = 9;
+ ipct.setText(ipAddress);
+ sid.setText(ssid);
+ 
+ char mqttIpStr[16];
+  ipAddressToChar(mqtt_ip, mqttIpStr, sizeof(mqttIpStr));
+  ipmq.setText(mqttIpStr);
+  ptmq.setValue(mqtt_port);
+}
+
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
+
+
+//--------------------------------------------------------// page 7 editar  //-----------------------------------------------------------//
+
+void vt6call(void *ptr) {  // bt voltar da tela editar
+     dbSerial.println("Tela ativa3!");
+ telaAtiva = 3;
+ Load_Descarte();
+}
+
+void pscall(void *ptr) { // bt pesquisar carreta
+uint32_t carreta = 0;
+   dbSerial.println("localizando...");
+ edn.getValue(&carreta);
+ //ab.setValue(Carreta_Abatida[carreta]);
+ //ad.setValue(Carreta_Descarte[carreta]);
+
+String numCarreta = String(carreta);
+client.publish("setDataEdit", numCarreta.c_str());
+}
+
+void envcall(void *ptr) { // bt salva alteraçao
+uint32_t carreta = 0, CA = 0, CD = 0;
+   dbSerial.println("Salvando alterações...");
+ edn.getValue(&carreta);
+ ab.getValue(&CA);
+ ad.getValue(&CD);
+
+ Carreta_Abatida[carreta] = CA;
+ Carreta_Descarte[carreta] = CD;
+
+ if(editDataCarreta(CA,CD,carreta)){
+ edn.setValue(0);
+ ab.setValue(0);
+ ad.setValue(0);    
+  }
+
+}
+
+//--------------------------------------------------------//------------- //-----------------------------------------------------------//
+
+//--------------------------------------------------------// page 9 rede  //-----------------------------------------------------------//
+void evpcall(void *ptr) { // bt enviar alteraçao
+char mqtt_ip_text[16];
+
+ dbSerial.println("alterando...");
+
+ ipmq.getText(mqtt_ip_text, sizeof(mqtt_ip_text));
+ IPAddress mqtt_ip = parseIPAddress(mqtt_ip_text);
+ preferences.putString("mqtt_ip", mqtt_ip_text);
+
+ ptmq.getValue(&mqtt_port); 
+ preferences.putUInt("mqtt_port", mqtt_port);
+
+ conectMQTT();
+dbSerial.println("...finalizado"); 
+}
+
+
+//--------------------------------------------------------//------------- //-----------------------------------------------------------//
+
 
 
 //--------------------------------------------------------// page 4 menu  //-----------------------------------------------------------//
@@ -244,3 +321,13 @@ nc3.setValue(zera);
 }
 
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
+
+
+IPAddress parseIPAddress(char* ip_str) { 
+  byte ip_bytes[4]; 
+  sscanf(ip_str, "%hhu.%hhu.%hhu.%hhu", &ip_bytes[0], &ip_bytes[1], &ip_bytes[2], &ip_bytes[3]); 
+  return IPAddress(ip_bytes); 
+  }
+void ipAddressToChar(IPAddress ip, char* buffer, size_t size) { 
+  snprintf(buffer, size, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+   }
