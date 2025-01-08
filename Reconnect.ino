@@ -21,7 +21,7 @@ void reconnect() {
           showNotification(status.c_str(),2);
       
       // Tenta se conectar ao broker MQTT
-      if (client.connect("ContadorSatV4Client")) {
+      if (client.connect("ContadorSatV4.1")) {
         Serial.println("ok Conectado ao broker MQTT!");
         //client.publish("contadorSat", "Contador SAT V4.1 conectado!");
         showNotification("Contador SAT V4.1 conectado!",2);

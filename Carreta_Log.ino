@@ -142,14 +142,13 @@ StaticJsonDocument<256> doc;
 
  if (client.publish("topic/carretaDataEdit", jsonStr.c_str())) {
   dbSerial.println("Dados enviados com sucesso!!");
-  txted.setText("Carreta Editada com Sucesso!");
+  txted.setText("Enviando dados...");
   return true;
  }else{
   dbSerial.println("ERRO NA GRAVAÇAO verifique a conexao!");
-  txted.setText("ERRO NA GRAVAÇAO verifique a conexao!");
+  txted.setText("ERRO ao enviar, verifique a conexao!");
   return false;
     } 
-
 
 
 }

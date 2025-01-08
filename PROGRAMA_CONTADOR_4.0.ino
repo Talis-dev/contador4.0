@@ -119,8 +119,8 @@ NexText nfy = NexText(0, 1, "nfy"); // notificaçao
 
 NexText vel = NexText(0, 7, "vel"); // velocidade norea
 NexText hor = NexText(0, 2, "hor"); // hora
-NexText bat = NexText(0, 13, "bat"); // bateria
-NexText t12 = NexText(0, 35, "t12"); // tempo off descarte
+NexText bat = NexText(0, 12, "bat"); // bateria
+NexText t12 = NexText(0, 34, "t12"); // tempo off descarte
 
 NexNumber C0 = NexNumber(0, 16, "C0");
 NexNumber C1 = NexNumber(0, 21, "C1");
@@ -132,12 +132,12 @@ extern uint32_t varC0,varC1,varC2,varC3,varC4;
 uint32_t varC0 = 0,varC1 = 0,varC2 = 0,varC3 = 0,varC4 = 0;
 
 NexButton b0 = NexButton(0, 3, "b0"); // bt chama pagina carretas
-NexButton b1 = NexButton(0, 26, "b1"); // bt chama pagina menu
-NexButton b2 = NexButton(0, 30, "b2"); // bt chama intervalo
+NexButton b1 = NexButton(0, 25, "b1"); // bt chama pagina menu
+NexButton b2 = NexButton(0, 29, "b2"); // bt chama pagina horarios
 
 NexDSButton bt0   = NexDSButton(0, 10, "bt0"); // habilita descarte
-NexDSButton bt1   = NexDSButton(0, 11, "bt1"); // habilita contador
-
+//NexDSButton bt1   = NexDSButton(0, 11, "bt1"); // habilita contador
+NexButton bt1 = NexButton(0, 39, "bt1"); // habilita contador
 
 extern uint32_t bt0var,bt1var;
 uint32_t bt0var = 0,bt1var = 0;
@@ -146,11 +146,11 @@ extern uint32_t imagem1,imagem2,imagem3,imagem4,imagem5,imagem6;
 uint32_t imagem1=1,imagem2=1,imagem3=1,imagem4=1,imagem5=2,imagem6=5;
 
 NexPicture p0 = NexPicture(0, 5, "p0"); // img 01
-NexPicture p1 = NexPicture(0, 31, "p1"); // img 02
+NexPicture p1 = NexPicture(0, 30, "p1"); // img 02
 NexPicture p2 = NexPicture(0, 9, "p2"); // img 03
-NexPicture p3 = NexPicture(0, 33, "p3"); // img 04
-NexPicture p4 = NexPicture(0, 15, "p4"); // img 05
-NexPicture p5 = NexPicture(0, 38, "p5"); // img 06 sdcard
+NexPicture p3 = NexPicture(0, 32, "p3"); // img 04
+NexPicture p4 = NexPicture(0, 14, "p4"); // img 05
+NexPicture p5 = NexPicture(0, 37, "p5"); // img 06 sdcard
 uint32_t tempoAtt;
 
 
@@ -292,6 +292,24 @@ NexNumber ad = NexNumber(pageEdit, 9, "ad");
 //-----------------------------------------------------------------------------------------------------------------------------------//
 
 
+//----------------------------------------------------ENDEREÇO NEXTION IHM page 8 horarios --------------------------------------------------//
+
+int pageHorarios = 8;
+NexText t0 = NexText(pageHorarios, 1, "t0"); // text titulo
+
+NexButton vt8 = NexButton(pageHorarios,2, "vt8"); // botao voltar
+
+NexNumber lcnum = NexNumber(pageHorarios, 4, "lcnum"); // numero da carreta
+NexButton lc = NexButton(pageHorarios,5, "lc"); // botao pesquisar
+
+NexText tini = NexText(pageHorarios, 9, "tini"); // hora inicio
+NexText tfim = NexText(pageHorarios, 10, "tfim"); // hora termino
+NexText thrs = NexText(pageHorarios, 11, "thrs"); // horarios de paradas
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------//
+
 //----------------------------------------------------ENDEREÇO NEXTION IHM page 9 rede --------------------------------------------------//
 int pageRede = 9;
 NexButton vt7 = NexButton(pageRede,2, "vt7"); // botao voltar
@@ -299,7 +317,7 @@ NexButton evp = NexButton(pageRede,20, "evp"); // botao enviar parametros
 NexButton eth = NexButton(pageRede,7, "eth"); // botao alterna wifi/ethernet
 NexButton wfm = NexButton(pageRede,19, "wfm"); // botao inicializa wifi maneger
 
-NexText t0 = NexText(pageRede, 1, "t0"); // txt titulo page
+NexText txthrs = NexText(pageRede, 1, "txthrs"); // txt titulo page
 
 NexText ipmq = NexText(pageRede, 4, "ipmq"); // txt IP mqtt
 NexNumber ptmq = NexNumber(pageRede, 6, "ptmq"); // number Porta mqtt
@@ -330,6 +348,7 @@ NexTouch *nex_listen_list[] =
 &vt4,&ed, //page 3 mortalidade
 &vt5,&cfs,&rd, //page 6 config
 &vt6,&ps,&env, //page 7 editar
+&vt8,&lc,//page 8 horarios
 &vt7,&eth,&evp,&wfm,//page 9 rede
     NULL
 };
@@ -570,10 +589,39 @@ DeserializationError error = deserializeJson(doc, PayLoad);
     txted.setText("Dados da Carreta Nao encontrado!");
     dbSerialPrintln("Dados Carreta Nao encontrado!");
   }
+  if(PayLoad == "true"){
+    txted.setText("Dados da Carreta alterado com SUCESSO!");
+    dbSerialPrintln("Dados da Carreta alterado com sucesso!");
+  }
+  
  ab.setValue(doc["AvesAbatida"]);
  ad.setValue(doc["AvesDescarte"]);
   }
 
+
+
+if (strcmp(topic,"request/hoursView")==0){
+ StaticJsonDocument<556> doc;
+DeserializationError error = deserializeJson(doc, PayLoad);
+  if (error) {
+    dbSerial.print("Erro ao analisar JSON: date");
+    client.publish("contadorSat", "Erro ao analisar JSON: date!");
+    return;
+  }
+  if(PayLoad == "false"){
+    txthrs.setText("Dados da Carreta Nao encontrado!");
+    dbSerialPrintln("Dados Carreta Nao encontrado!");
+  }
+
+const char* hraInicio = doc["inicio"];
+const char* hraTermino = doc["termino"];
+const char* hraParadas = doc["paradas"];
+
+tini.setText(hraInicio);
+tfim.setText(hraTermino);
+thrs.setText(hraParadas);
+
+}
 
 if ( strcmp(topic,"server_restore")==0){
  StaticJsonDocument<1360> doc;

@@ -18,6 +18,7 @@ evp.attachPop(evpcall, &evp);//bt salvar configuraçoes
 
 p5.attachPop(p5call, &p5);//imagem db on/off, cptura toque
 
+lc.attachPop(lccall, &lc);//bt pesquisar carreta page horarios
 
 z0.attachPop(z0call, &z0);//bt  salvar e finalizar abate
 z1.attachPop(z1call, &z1);//bt zera total page menu
@@ -36,6 +37,7 @@ vt3.attachPop(vt3call, &vt3); // botao voltar tela  menu
 vt4.attachPop(vt4call, &vt4); // botao voltar tela  carretas mortalidade
 vt5.attachPop(vt5call, &vt5); // botao voltar tela  config
 vt6.attachPop(vt6call, &vt6); // botao voltar tela  editar
+vt8.attachPop(vt8call, &vt8); // botao voltar tela  horarios
 
 ps.attachPop(pscall, &ps); // botao pesquisar carreta
 env.attachPop(envcall, &env); // botao enviar alteraçoes
@@ -73,14 +75,17 @@ void bt0call(void *ptr) { // bt liga desliga norea descarte
 dbSerial.println("Botao bt0 prescionado!");
 bt0.getValue(&bt0var);
 }
-
-void bt1call(void *ptr) { // bt abilita contador
+void bt1call(void *ptr) { // bt pulse abilita contador
 dbSerial.println("Botao bt1 prescionado!");
-bt1.getValue(&bt1var);
-ContadorON = bt1var;
-if(!bt1var){
+ContadorON = !ContadorON;
+if(ContadorON){
+sendCommand("bt1.bco=1024");
+bt1.setText("CONTADOR ON");
+}else{
+sendCommand("bt1.bco=43008");
+bt1.setText("CONTADOR OFF");
 pulsesPerMinute = 0;
-pulsesPerHour = 0;
+pulsesPerHour = 0;  
 }
 }
 
@@ -194,6 +199,21 @@ uint32_t carreta = 0, CA = 0, CD = 0;
 
 }
 
+//--------------------------------------------------------//------------- //-----------------------------------------------------------//
+
+//--------------------------------------------------------// page 8 horarios  //-----------------------------------------------------------//
+void vt8call(void *ptr) { // botao voltar na pge 8 horarios
+ dbSerial.println("Tela ativa 0!");
+ telaAtiva = 0; }
+
+void lccall(void *ptr) { // bt pesquisar carreta
+uint32_t carreta = 0;
+dbSerial.println("localizando...");
+lcnum.getValue(&carreta);
+String numCarreta = String(carreta);
+client.publish("getHours", numCarreta.c_str());
+
+}
 //--------------------------------------------------------//------------- //-----------------------------------------------------------//
 
 //--------------------------------------------------------// page 9 rede  //-----------------------------------------------------------//

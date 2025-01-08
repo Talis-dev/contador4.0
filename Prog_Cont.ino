@@ -210,7 +210,7 @@ noreaRun = false; // norea parada
     setText = "Parada P/ Intervalo ";  
     numcolor = 2;
    }else{
-    setText = "Parada " + String(quntidade_pausa,DEC) + " registrada ";
+    setText =  String(quntidade_pausa,DEC) + ": ";
     numcolor = 1;
    // setText += ";    
     }  
@@ -239,11 +239,7 @@ noreaRun = false; // norea parada
 
   if (resumedCounting ) {// executa após retomada
    String setText = "";
-    if(IntervaloButton){
-    setText = "Retorno do intervalo " ;
-    }else{
-      setText = "Retorno registrado ";
-    } 
+
  
   setText += String(Timex[3],DEC);
   setText += ":";
