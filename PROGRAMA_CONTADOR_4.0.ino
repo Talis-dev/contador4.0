@@ -106,13 +106,13 @@ int bufferVR = 0;
 char voltC[5] = {0};
 extern char voltC[5];
 
-extern bool sdCardFault,noreaDescartPower;
-bool sdCardFault = false,noreaDescartPower = false;
+extern bool sdCardFault,noreaDescartPower,updatedTime;
+bool sdCardFault = false,noreaDescartPower = false,updatedTime = false;
 
 int timeOffDescart = 0;
 extern int CarretaPosition,CarretaTotalAbatida,CarretaTotalDescarte,timeOffDescart;
 extern uint32_t Carreta_Abatida[], Carreta_Descarte[];
-bool satInitialized = false; // variavel para atualizar data e hra apenas na inicializaçao
+
 
 //----------------------------------------------------ENDEREÇO NEXTION IHM tela 0 home ---------------------------------------------------//
 NexText nfy = NexText(0, 1, "nfy"); // notificaçao
@@ -558,7 +558,7 @@ if (strcmp(topic,"server_response")==0){
   }
 
 
-if (!satInitialized && strcmp(topic,"server_return_date")==0){
+if (!updatedTime && strcmp(topic,"server_return_date")==0){
  StaticJsonDocument<256> doc;
 DeserializationError error = deserializeJson(doc, PayLoad);
   if (error) {
@@ -574,7 +574,7 @@ DeserializationError error = deserializeJson(doc, PayLoad);
   segunvar = doc["seg"];
   delay(100);
   rtc.adjust(DateTime(anovar,mesvar,diavar,horavar,minutvar,segunvar)); // sethra rtc ano/mes/dia  /hora/minuto/segundo
-  satInitialized = true;
+  updatedTime = true;
   }
 
 if (strcmp(topic,"request/dataEdit")==0){
